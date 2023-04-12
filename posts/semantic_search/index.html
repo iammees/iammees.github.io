@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-01-12">
+
+<title>iammees - Semantic Search with Sentence Transformers and FAISS</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Semantic Search with Sentence Transformers and FAISS</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">January 12, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>Semantic search essentially means retrieving documents from a corpus using natural language queries. That is, instead of carefully searching for an abundance of keywords, semantic search can enable us to find the most semantically relevant results using intuitive queries.</p>
+<p>Below, we’ll have a look at how we can leverage the language understanding capabilities of LLMs to quickly build a semantic search engine that allows us to query a dataset of speeches in the German parliament (the German Bundestag).</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> Dataset, load_from_disk</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer, AutoModel</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sentence_transformers <span class="im">import</span> SentenceTransformer</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="loading-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-data">Loading the data</h2>
+<p>Each plenary sitting of the Bundestag is documented by shorthand writers and the stenographic records are made available online. The dataset is provided by the folks behind <a href="https://opendiscourse.de/">Open Discourse</a>, who went through the work of scraping and parsing the official minutes of plenary proceedings (this is actually not the easiest task, e.g., because interjections have to be attributed correctly), and available via the <a href="https://dataverse.harvard.edu/dataverse/opendiscourse">Harvard Dataverse</a>.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:44:58.622204Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:44:58.620592Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:45:38.960885Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:45:38.959462Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:44:58.622158Z&quot;}" data-trusted="true" data-execution_count="4">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>wget <span class="op">-</span>O speeches.feather <span class="op">-</span>q https:<span class="op">//</span>dataverse.harvard.edu<span class="op">/</span>api<span class="op">/</span>access<span class="op">/</span>datafile<span class="op">/</span><span class="dv">4745913</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>wget <span class="op">-</span>O factions.feather <span class="op">-</span>q https:<span class="op">//</span>dataverse.harvard.edu<span class="op">/</span>api<span class="op">/</span>access<span class="op">/</span>datafile<span class="op">/</span><span class="dv">4549632</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:45:38.972528Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:45:38.972138Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:45:44.773093Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:45:44.771982Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:45:38.972490Z&quot;}" data-trusted="true" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>speeches <span class="op">=</span> pd.read_feather(<span class="st">"speeches.feather"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>factions <span class="op">=</span> pd.read_feather(<span class="st">"factions.feather"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>As it turns out, the dataset contains all speeches (or to be more precise: all documented utterances) from the beginning of the first electoral term (September 1949) until May 2021 (some months before the end of the 19th electoral term).</p>
+<p>Here, we’ll only work with data from the 19th electoral term (which began in October 2017 and ended four years later in October 2021). Let’s do some quick data wrangling: we add data on party affiliation, delete some columns that are unnecessary for our purposes, and sort the data chronologically.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:45:44.787053Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:45:44.786434Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:45:44.971702Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:45:44.970513Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:45:44.786891Z&quot;}" data-trusted="true" data-execution_count="8">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>id2abb <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">zip</span>(factions.<span class="bu">id</span>, factions.abbreviation))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>speeches <span class="op">=</span> (</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    speeches.query(<span class="st">"electoralTerm == 19"</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>            .assign(faction<span class="op">=</span><span class="kw">lambda</span> df_: df_.factionId.<span class="bu">map</span>(id2abb),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                    date<span class="op">=</span><span class="kw">lambda</span> df_: pd.to_datetime(df_.date))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>            .drop(columns<span class="op">=</span>[<span class="st">"electoralTerm"</span>, <span class="st">"politicianId"</span>, <span class="st">"factionId"</span>, <span class="st">"documentUrl"</span>, <span class="st">"positionLong"</span>])</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>            .rename(columns<span class="op">=</span>{<span class="st">"positionShort"</span>: <span class="st">"position"</span>})</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            .sort_values(by<span class="op">=</span><span class="st">"id"</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>            .reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:45:44.974041Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:45:44.973150Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:45:45.008392Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:45:45.007198Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:45:44.973997Z&quot;}" data-trusted="true" data-execution_count="9">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>speeches.info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 60958 entries, 0 to 60957
+Data columns (total 8 columns):
+ #   Column         Non-Null Count  Dtype         
+---  ------         --------------  -----         
+ 0   id             60958 non-null  int64         
+ 1   session        60958 non-null  int64         
+ 2   firstName      60958 non-null  object        
+ 3   lastName       60958 non-null  object        
+ 4   speechContent  60958 non-null  object        
+ 5   position       60958 non-null  object        
+ 6   date           60958 non-null  datetime64[ns]
+ 7   faction        60958 non-null  object        
+dtypes: datetime64[ns](1), int64(2), object(5)
+memory usage: 3.7+ MB</code></pre>
+</div>
+</div>
+<p>In total, there are have been 60,958 utterances (not accounting for some erroneous entries like the second row below).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:45:45.013880Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:45:45.013120Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:45:45.044241Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:45:45.043151Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:45:45.013847Z&quot;}" data-trusted="true" data-execution_count="10">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>speeches</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">session</th>
+<th data-quarto-table-cell-role="th">firstName</th>
+<th data-quarto-table-cell-role="th">lastName</th>
+<th data-quarto-table-cell-role="th">speechContent</th>
+<th data-quarto-table-cell-role="th">position</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">faction</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1000000</td>
+<td>1</td>
+<td>Alterspräsident Dr. Hermann</td>
+<td>Otto Solms</td>
+<td>\n\nGuten Morgen, liebe Kolleginnen und Kolleg...</td>
+<td>Presidium of Parliament</td>
+<td>2017-10-24</td>
+<td>not found</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>1000001</td>
+<td>1</td>
+<td>Alterspräsident Dr. Hermann</td>
+<td>Otto Solms</td>
+<td></td>
+<td>Presidium of Parliament</td>
+<td>2017-10-24</td>
+<td>not found</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1000002</td>
+<td>1</td>
+<td>Carsten</td>
+<td>Schneider</td>
+<td>\n\nSehr geehrter Herr Präsident! Sehr geehrte...</td>
+<td>Member of Parliament</td>
+<td>2017-10-24</td>
+<td>SPD</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1000003</td>
+<td>1</td>
+<td>Dr. Hermann Otto</td>
+<td>Solms</td>
+<td>\n\nDas Wort hat jetzt der Kollege Dr.&nbsp;Bernd B...</td>
+<td>Presidium of Parliament</td>
+<td>2017-10-24</td>
+<td>not found</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1000004</td>
+<td>1</td>
+<td>Bernd</td>
+<td>Baumann</td>
+<td>\n\nHerr Präsident! Meine Damen und Herren! Im...</td>
+<td>Member of Parliament</td>
+<td>2017-10-24</td>
+<td>AfD</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">60953</td>
+<td>1060953</td>
+<td>228</td>
+<td>Helge</td>
+<td>Lindh</td>
+<td>\n\nWie bitte?</td>
+<td>Member of Parliament</td>
+<td>2021-05-07</td>
+<td>SPD</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">60954</td>
+<td>1060954</td>
+<td>228</td>
+<td>Petra</td>
+<td>Pau</td>
+<td>\n\nSie müssen das jetzt verkürzen und zum Pun...</td>
+<td>Presidium of Parliament</td>
+<td>2021-05-07</td>
+<td>not found</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">60955</td>
+<td>1060955</td>
+<td>228</td>
+<td>Helge</td>
+<td>Lindh</td>
+<td>\n\nGut, ich beschränke mich auf einen Satz:\n...</td>
+<td>Member of Parliament</td>
+<td>2021-05-07</td>
+<td>SPD</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">60956</td>
+<td>1060956</td>
+<td>228</td>
+<td>Petra</td>
+<td>Pau</td>
+<td>\n\nDas Wort hat der Kollege Tankred Schipansk...</td>
+<td>Presidium of Parliament</td>
+<td>2021-05-07</td>
+<td>not found</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">60957</td>
+<td>1060957</td>
+<td>228</td>
+<td>Tankred</td>
+<td>Schipanski</td>
+<td>\n\nVielen Dank.&nbsp;– Frau Präsidentin! Liebe Kol...</td>
+<td>Member of Parliament</td>
+<td>2021-05-07</td>
+<td>CDU/CSU</td>
+</tr>
+</tbody>
+</table>
+
+<p>60958 rows × 8 columns</p>
+</div>
+</div>
+</div>
+<p>Let’s have a look at the remarks of Alterspräsident (president by right of age) Hermann Otto Solms who presided over the Bundestag at the beginning of the first session of the new electoral term.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:45:45.046554Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:45:45.045797Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:45:45.054743Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:45:45.053651Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:45:45.046513Z&quot;}" data-trusted="true" data-execution_count="11">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>speeches.iloc[<span class="dv">0</span>].speechContent</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>'\n\nGuten Morgen, liebe Kolleginnen und Kollegen! Nehmen Sie bitte Platz.\n\nMeine sehr verehrten Damen und Herren! Liebe Kolleginnen und Kollegen! Ich begrüße Sie zur konstituierenden Sitzung des 19.\xa0Deutschen Bundestages. Es entspricht der ständigen Übung, zu Beginn der konstituierenden Sitzung nach den Regelungen der bisherigen Geschäftsordnung des Deutschen Bundestages zu verfahren.\n\n§\xa01 Absatz\xa02 der Geschäftsordnung des Deutschen Bundestages sieht vor, dass das am längsten dem Bundestag angehörende Mitglied, das hierzu bereit ist, den Vorsitz übernimmt, bis der Deutsche Bundestag einen Präsidenten gewählt hat.\n\nDie Fraktion der AfD widerspricht diesem Verfahren und hat auf Drucksache\xa019/2 beantragt, einen Versammlungsleiter zu wählen, der die konstituierende Sitzung eröffnen soll. Über diesen Antrag lasse ich sofort abstimmen. Wer dem Antrag der Fraktion der AfD zustimmt, den bitte ich um sein Handzeichen.\xa0– Gegenstimmen?\xa0–\n\n({0})\n\nEnthaltungen?\xa0– Der Antrag ist damit mit den Stimmen aller Fraktionen bei Zustimmung der AfD-Fraktion abgelehnt.\n\nWir verfahren nunmehr entsprechend §\xa01 Absatz\xa02 der bisherigen Geschäftsordnung. Herr Dr.\xa0Wolfgang Schäuble ist das Mitglied, das dem Deutschen Bundestag am längsten angehört. Er hat jedoch auf das Amt des Alterspräsidenten verzichtet. Damit rückt das am zweitlängsten dem Bundestag angehörende Mitglied nach. Ich war von 1980 bis 2013, also 33\xa0Jahre, Mitglied des Deutschen Bundestages. Ist jemand unter Ihnen, der dem Bundestag länger angehört?\xa0–\n\n({1})\n\nDas scheint offenkundig nicht der Fall zu sein. Dann trifft es also tatsächlich zu, dass die Rolle des Alterspräsidenten auf mich zukommt. Es ist mir eine Ehre und Freude zugleich, den Vorsitz bis zur Amtsübernahme durch den neugewählten Präsidenten des Deutschen Bundestages zu übernehmen.\n\nDamit rufe ich nun den Tagesordnungspunkt\xa01 auf:\n\nEröffnung der Sitzung durch den Alterspräsidenten\n\nDrucksache\xa019/2'</code></pre>
+</div>
+</div>
+<p>We can immediately see some issues (like <code>({0})</code> or <code>\n\nDrucksache\xa</code>) but the tokenizer will handle some of them and we should be able to get some sound embeddings anyway.</p>
+<p>Let’s convert our pandas DataFrame to a HuggingFace Dataset:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:45:45.057252Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:45:45.056429Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:45:45.372486Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:45:45.371524Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:45:45.057127Z&quot;}" data-trusted="true" data-execution_count="12">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> Dataset.from_pandas(speeches)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<pre><code>Dataset({
+    features: ['id', 'session', 'firstName', 'lastName', 'speechContent', 'position', 'date', 'faction'],
+    num_rows: 60958
+})</code></pre>
+</div>
+</div>
+</section>
+<section id="computing-embeddings" class="level2">
+<h2 class="anchored" data-anchor-id="computing-embeddings">Computing embeddings</h2>
+<p>Getting embeddings should now be very easy. To see what’s going on under the hood, we’ll first have a look at plain HuggingFace transformers before we make use of the dedicated <a href="https://www.sbert.net/">Sentence-Transformers</a> library. Note that we’ll use the <code>T-Systems-onsite/cross-en-de-roberta-sentence-transformer</code> model checkpoint (see <a href="https://huggingface.co/T-Systems-onsite/cross-en-de-roberta-sentence-transformer">here</a> for the model card) that was fine-tuned on English and German text and is intended for computing text embeddings.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:45:45.377508Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:45:45.375800Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:45:45.388342Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:45:45.387041Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:45:45.377463Z&quot;}" data-trusted="true" data-execution_count="13">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>model_ckpt <span class="op">=</span> <span class="st">"T-Systems-onsite/cross-en-de-roberta-sentence-transformer"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:45:45.393918Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:45:45.393003Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:23.639897Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:23.638717Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:45:45.393873Z&quot;}" data-trusted="true" data-execution_count="14">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(model_ckpt)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModel.from_pretrained(model_ckpt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:23.642459Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:23.642053Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:23.658831Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:23.657462Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:23.642417Z&quot;}" data-trusted="true" data-execution_count="15">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>encoded <span class="op">=</span> tokenizer(speeches.iloc[<span class="dv">0</span>].speechContent, padding<span class="op">=</span><span class="va">True</span>, truncation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> tokenizer.convert_ids_to_tokens(encoded.input_ids)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tokens[:<span class="dv">100</span>])</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(tokens))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>['&lt;s&gt;', '▁Gut', 'en', '▁Morgen', ',', '▁liebe', '▁Kolle', 'ginn', 'en', '▁und', '▁Kollegen', '!', '▁Nehmen', '▁Sie', '▁bitte', '▁Platz', '.', '▁Meine', '▁sehr', '▁ver', 'ehrt', 'en', '▁Damen', '▁und', '▁Herren', '!', '▁Liebe', '▁Kolle', 'ginn', 'en', '▁und', '▁Kollegen', '!', '▁Ich', '▁be', 'gr', 'üß', 'e', '▁Sie', '▁zur', '▁konstitu', 'ierenden', '▁Sitzung', '▁des', '▁19.', '▁Deutschen', '▁Bundestag', 'es', '.', '▁Es', '▁entspricht', '▁der', '▁ständig', 'en', '▁Übung', ',', '▁zu', '▁Beginn', '▁der', '▁konstitu', 'ierenden', '▁Sitzung', '▁nach', '▁den', '▁Regelung', 'en', '▁der', '▁bisherige', 'n', '▁Geschäfts', 'ordnung', '▁des', '▁Deutschen', '▁Bundestag', 'es', '▁zu', '▁', 'verfahren', '.', '▁§', '▁1', '▁Absatz', '▁2', '▁der', '▁Geschäfts', 'ordnung', '▁des', '▁Deutschen', '▁Bundestag', 'es', '▁sieht', '▁vor', ',', '▁dass', '▁das', '▁am', '▁längst', 'en', '▁dem', '▁Bundestag']
+436</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:23.660884Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:23.660500Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:23.670167Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:23.668941Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:23.660844Z&quot;}" data-trusted="true" data-execution_count="16">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>tokenizer.model_max_length</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<pre><code>512</code></pre>
+</div>
+</div>
+<p>The tokenizer splits our example into 436 tokens which is less than the model’s maximum context size of 512. Note that we’ll simply truncate the input sequence if it is longer (we could certainly use a more sophisticated approach using windows, but let’s keep it simple here).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:23.672190Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:23.671587Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:23.684304Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:23.683508Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:23.672150Z&quot;}" data-trusted="true" data-execution_count="17">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>decoded <span class="op">=</span> tokenizer.decode(encoded.input_ids)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>decoded[:<span class="dv">1000</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>'&lt;s&gt; Guten Morgen, liebe Kolleginnen und Kollegen! Nehmen Sie bitte Platz. Meine sehr verehrten Damen und Herren! Liebe Kolleginnen und Kollegen! Ich begrüße Sie zur konstituierenden Sitzung des 19. Deutschen Bundestages. Es entspricht der ständigen Übung, zu Beginn der konstituierenden Sitzung nach den Regelungen der bisherigen Geschäftsordnung des Deutschen Bundestages zu verfahren. § 1 Absatz 2 der Geschäftsordnung des Deutschen Bundestages sieht vor, dass das am längsten dem Bundestag angehörende Mitglied, das hierzu bereit ist, den Vorsitz übernimmt, bis der Deutsche Bundestag einen Präsidenten gewählt hat. Die Fraktion der AfD widerspricht diesem Verfahren und hat auf Drucksache 19/2 beantragt, einen Versammlungsleiter zu wählen, der die konstituierende Sitzung eröffnen soll. Über diesen Antrag lasse ich sofort abstimmen. Wer dem Antrag der Fraktion der AfD zustimmt, den bitte ich um sein Handzeichen. – Gegenstimmen? – ({0}) Enthaltungen? – Der Antrag ist damit mit den Stimmen all'</code></pre>
+</div>
+</div>
+<p>As we can see, the tokenizer removes some of the issues we’ve seen earlier in its preprocessing stage.</p>
+<p>We can now apply the model and have a look at its outputs:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:23.686328Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:23.685650Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:24.623638Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:24.622350Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:23.686289Z&quot;}" data-trusted="true" data-execution_count="18">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>encoded <span class="op">=</span> tokenizer(speeches.iloc[<span class="dv">0</span>].speechContent, </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                    padding<span class="op">=</span><span class="va">True</span>, truncation<span class="op">=</span><span class="va">True</span>, return_tensors<span class="op">=</span><span class="st">"pt"</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    model_output <span class="op">=</span> model(<span class="op">**</span>encoded)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:24.625847Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:24.625414Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:24.634194Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:24.633155Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:24.625804Z&quot;}" data-trusted="true" data-execution_count="19">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>model_output[<span class="st">"last_hidden_state"</span>].shape, <span class="bu">len</span>(tokens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<pre><code>(torch.Size([1, 436, 768]), 436)</code></pre>
+</div>
+</div>
+<p>As expected, we get an embedding vector of size 768 for every token in our input (including the special tokens <code>&lt;s&gt;</code> and <code>'&lt;/s&gt;'</code> at the beginning and at the end). To get our final embedding for the whole input, we’ll have to apply mean pooling to the model’s output (i.e., we average the embeddings for all tokens to get the final embedding). Thus, we have to define a corresponding function:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:24.636899Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:24.635998Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:24.647759Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:24.646799Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:24.636859Z&quot;}" data-trusted="true" data-execution_count="20">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mean_pooling(model_output, attention_mask):</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    token_embeddings <span class="op">=</span> model_output[<span class="dv">0</span>]</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    input_mask_expanded <span class="op">=</span> attention_mask.unsqueeze(<span class="op">-</span><span class="dv">1</span>).expand(token_embeddings.size()).<span class="bu">float</span>()</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.<span class="bu">sum</span>(token_embeddings <span class="op">*</span> input_mask_expanded, <span class="dv">1</span>) <span class="op">/</span> torch.clamp(input_mask_expanded.<span class="bu">sum</span>(<span class="dv">1</span>), <span class="bu">min</span><span class="op">=</span><span class="fl">1e-9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>With this function, we can finally compute the embedding:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:24.649816Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:24.649270Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:24.667190Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:24.666082Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:24.649779Z&quot;}" data-trusted="true" data-execution_count="21">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>speech_embedding <span class="op">=</span> mean_pooling(model_output, encoded[<span class="st">"attention_mask"</span>])</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>speech_embedding.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="21">
+<pre><code>torch.Size([1, 768])</code></pre>
+</div>
+</div>
+<p>So far, so good. We can achieve the very same, though, using the Sentence-Transformers library which is dedicated to computing embeddings.</p>
+<p>To load our model, we now use the <code>SentenceTransformer</code> class. To obtain the embedding, we simply call <code>model.encode()</code>.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:24.669213Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:24.668662Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:46.564637Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:46.563534Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:24.669175Z&quot;}" data-trusted="true" data-execution_count="22">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> SentenceTransformer(model_ckpt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:46.566642Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:46.566244Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:46:53.251661Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:46:53.250571Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:46.566602Z&quot;}" data-trusted="true" data-execution_count="23">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>speech_embedding_st <span class="op">=</span> model.encode(speeches.iloc[<span class="dv">0</span>].speechContent)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>speech_embedding_st.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"c34983562d6d42d3a7709ed6fe0c396a","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="23">
+<pre><code>(768,)</code></pre>
+</div>
+</div>
+<p>This way we actually get the same embedding as we did when using the HuggingFace transformer library.</p>
+<p>Now we can compute embeddings for all samples in our dataset. What would have lasted many hours on a CPU gets <a href="https://huggingface.co/docs/datasets/process#batch-processing">processed in batches</a> in a few minutes on a GPU; just set <code>batched=True</code> when calling <a href="https://huggingface.co/docs/datasets/v2.10.0/en/package_reference/main_classes#datasets.Dataset.map"><code>map()</code></a>. Note that we could have also set the <code>batch_size</code> parameter (we use the default batch size of 1000).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:46:53.254104Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:46:53.253356Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:15.045949Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:15.044754Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:46:53.254058Z&quot;}" data-trusted="true" data-execution_count="24">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>embeddings_dataset <span class="op">=</span> dataset.<span class="bu">map</span>(</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> batch: {<span class="st">"embeddings"</span>: model.encode(batch[<span class="st">"speechContent"</span>])}, batched<span class="op">=</span><span class="va">True</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Now that we added the embeddings to our dataset, we can make use of the <a href="https://github.com/facebookresearch/faiss">FAISS library</a> (FAISS is short for Facebook AI Similarity Search) which provides efficient algorithms for searching and clustering embedding vectors. Computing a FAISS index for a HuggingFace Dataset is easy:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:15.048423Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:15.047887Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:15.993736Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:15.992670Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:15.048382Z&quot;}" data-trusted="true" data-execution_count="25">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>embeddings_dataset.add_faiss_index(column<span class="op">=</span><span class="st">"embeddings"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"97058cee2336404a9a17f345ccba12bb","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="25">
+<pre><code>Dataset({
+    features: ['id', 'session', 'firstName', 'lastName', 'speechContent', 'position', 'date', 'faction', 'embeddings'],
+    num_rows: 60958
+})</code></pre>
+</div>
+</div>
+</section>
+<section id="performing-semantic-search" class="level2">
+<h2 class="anchored" data-anchor-id="performing-semantic-search">Performing semantic search</h2>
+<section id="querying-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="querying-the-data">Querying the data</h3>
+<p>Having the FAISS index now allows us to perform queries with the <code>Dataset.get_nearest_examples()</code> function. Let’s try this with a simple sentence that we embed and then compare against the whole corpus to find the speeches with the most similar embeddings.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:15.996033Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:15.995381Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.042938Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.041805Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:15.995988Z&quot;}" data-trusted="true" data-execution_count="26">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> <span class="st">"Der Kampf gegen den Klimawandel muss oberste Priorität haben!"</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>q_emb <span class="op">=</span> model.encode(q)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"8c986918bbfa433db89cdf750ee609d9","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.044994Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.044520Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.115436Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.114409Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.044952Z&quot;}" data-trusted="true" data-execution_count="27">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>scores, samples <span class="op">=</span> embeddings_dataset.get_nearest_examples(<span class="st">"embeddings"</span>, q_emb, k<span class="op">=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><code>get_nearest_examples()</code> returns a tuple of scores (quantifying the fit between the query and the example) and the corresponding samples (the <code>k</code> best matches). We can put them into a pandas DataFrame for easier analysis:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.121798Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.121494Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.130863Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.129809Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.121769Z&quot;}" data-trusted="true" data-execution_count="28">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>samples_df <span class="op">=</span> pd.DataFrame.from_dict(samples)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>samples_df[<span class="st">"scores"</span>] <span class="op">=</span> scores</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>samples_df.sort_values(<span class="st">"scores"</span>, ascending<span class="op">=</span><span class="va">False</span>, inplace<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.133241Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.132512Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.165068Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.164017Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.133180Z&quot;}" data-trusted="true" data-execution_count="29">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>samples_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="29">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">session</th>
+<th data-quarto-table-cell-role="th">firstName</th>
+<th data-quarto-table-cell-role="th">lastName</th>
+<th data-quarto-table-cell-role="th">speechContent</th>
+<th data-quarto-table-cell-role="th">position</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">faction</th>
+<th data-quarto-table-cell-role="th">embeddings</th>
+<th data-quarto-table-cell-role="th">scores</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">9</td>
+<td>1060666</td>
+<td>227</td>
+<td>Julia</td>
+<td>Verlinden</td>
+<td>\n\nFangen Sie endlich damit an, den Klimaschu...</td>
+<td>Member of Parliament</td>
+<td>2021-05-06</td>
+<td>Grüne</td>
+<td>[0.06457225978374481, 0.14325504004955292, 0.1...</td>
+<td>39.370491</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">8</td>
+<td>1029268</td>
+<td>118</td>
+<td>Anja</td>
+<td>Weisgerber</td>
+<td>\n\nOkay.&nbsp;– Wir schaffen erst Anreize, und in ...</td>
+<td>Member of Parliament</td>
+<td>2019-10-17</td>
+<td>CDU/CSU</td>
+<td>[-0.012752844020724297, 0.19681210815906525, 0...</td>
+<td>39.225136</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">7</td>
+<td>1032505</td>
+<td>129</td>
+<td>Marie-Luise</td>
+<td>Dött</td>
+<td>\n\nSehr geehrter Herr Präsident! Meine Damen ...</td>
+<td>Member of Parliament</td>
+<td>2019-11-26</td>
+<td>CDU/CSU</td>
+<td>[-0.06372411549091339, 0.17748013138771057, 0....</td>
+<td>39.218792</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">6</td>
+<td>1001346</td>
+<td>7</td>
+<td>Lisa</td>
+<td>Badum</td>
+<td>\n\nNein.&nbsp;– Sie müssen sich erstens endlich an...</td>
+<td>Member of Parliament</td>
+<td>2018-01-18</td>
+<td>Grüne</td>
+<td>[-0.10626056790351868, 0.23017993569374084, -0...</td>
+<td>38.357986</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">5</td>
+<td>1019612</td>
+<td>80</td>
+<td>Carsten</td>
+<td>Träger</td>
+<td>\n\nSehr geehrte Frau Präsidentin! Kolleginnen...</td>
+<td>Member of Parliament</td>
+<td>2019-02-14</td>
+<td>SPD</td>
+<td>[-0.07200361043214798, 0.14576080441474915, 0....</td>
+<td>37.939503</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1032183</td>
+<td>128</td>
+<td>Andreas</td>
+<td>Jung</td>
+<td>\n\nWir werden mit diesem Klimapaket unserer V...</td>
+<td>Member of Parliament</td>
+<td>2019-11-15</td>
+<td>CDU/CSU</td>
+<td>[-0.05022718012332916, 0.02807101048529148, 0....</td>
+<td>37.559578</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1008459</td>
+<td>38</td>
+<td>Svenja</td>
+<td>Schulze</td>
+<td>\n\nHerr Abgeordneter, die Forschungsseite ist...</td>
+<td>Minister</td>
+<td>2018-06-13</td>
+<td>not found</td>
+<td>[0.03885478153824806, -0.16286222636699677, -0...</td>
+<td>37.429123</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1039271</td>
+<td>156</td>
+<td>Anja</td>
+<td>Weisgerber</td>
+<td>\n\nSehr geehrter Herr Kollege Hilse! Klar ist...</td>
+<td>Member of Parliament</td>
+<td>2020-04-23</td>
+<td>CDU/CSU</td>
+<td>[0.034136462956666946, 0.05767284706234932, -0...</td>
+<td>32.636410</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1</td>
+<td>1028351</td>
+<td>115</td>
+<td>Andreas</td>
+<td>Jung</td>
+<td>\n\nHerr Präsident! Liebe Kolleginnen und Koll...</td>
+<td>Member of Parliament</td>
+<td>2019-09-26</td>
+<td>CDU/CSU</td>
+<td>[0.08285392075777054, 0.06978157162666321, 0.0...</td>
+<td>30.107765</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1051468</td>
+<td>197</td>
+<td>Sven-Christian</td>
+<td>Kindler</td>
+<td>\n\nWir brauchen endlich eine Bundesregierung,...</td>
+<td>Member of Parliament</td>
+<td>2020-12-08</td>
+<td>Grüne</td>
+<td>[0.10869952291250229, 0.29951632022857666, -0....</td>
+<td>24.333567</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Let’s have a look at the three of the ten best matches:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.167439Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.166725Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.178000Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.176874Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.167389Z&quot;}" data-trusted="true" data-execution_count="30">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>samples_df.iloc[<span class="dv">0</span>].speechContent[:<span class="dv">1000</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="30">
+<pre><code>'\n\nFangen Sie endlich damit an, den Klimaschutz ernst zu nehmen, und überarbeiten Sie das Bundesberggesetz grundlegend, auch im Sinne des Umweltschutzes und zum Schutz der Menschen!\n\n({0})'</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.180027Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.179652Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.190398Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.189285Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.179989Z&quot;}" data-trusted="true" data-execution_count="31">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>samples_df.iloc[<span class="dv">1</span>].speechContent[:<span class="dv">1000</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="31">
+<pre><code>'\n\nOkay.\xa0– Wir schaffen erst Anreize, und in einem zweiten Schritt, wie gesagt, steigt der Preis an, und das ist unsere Antwort im Punkt Bepreisung.\n\nWenn die AfD von der Aufgabe aller Klima- und Energieziele spricht, dann sage ich Ihnen ganz klar: Ja, Deutschland alleine kann das Klima der Welt nicht retten; daraus machen wir auch gar keinen Hehl. Deswegen ist die Arbeit von Gerd Müller, des Entwicklungshilfeministers, auch an der Stelle so wichtig. Und deswegen ist es auch so wichtig, dass wir bei den Weltklimakonferenzen immer wieder dafür kämpfen, dass die Staaten der Welt sich auch an die Klimaziele halten, die sie sich selbst gesteckt haben.\n\n({0})\n\nDa ist das Pariser Abkommen ein Riesenschritt nach vorn.\n\nAber ich sage auch: Wir haben doch eine Verantwortung in der Welt. Wir müssen doch als Vorbild vorangehen und müssen zeigen, dass es gelingt, Klimaschutz und Wirtschaftswachstum nicht als Gegensätze zu begreifen, sondern auch als Chance für die Wirtschaft, sich auf die Entwicklu'</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.192636Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.192256Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.203266Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.202085Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.192582Z&quot;}" data-trusted="true" data-execution_count="32">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>samples_df.iloc[<span class="op">-</span><span class="dv">1</span>].speechContent[:<span class="dv">1000</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="32">
+<pre><code>'\n\nWir brauchen endlich eine Bundesregierung, die den Klimaschutz zur Toppriorität macht.\n\nVielen Dank.\n\n({0})'</code></pre>
+</div>
+</div>
+<p>If you know German, the results to our query look really good.</p>
+<p>Now remember that our model has been fine-tuned on both English and German text. That is, English and German texts with similar meaning should have similar embeddings. Thus, we should be able to query our dataset with English queries just as well. Let’s use the English translation of our first query and see what we get:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.205118Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.204671Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.250823Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.249688Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.205080Z&quot;}" data-trusted="true" data-execution_count="33">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>q_en <span class="op">=</span> <span class="st">"The fight against climate change must have top priority!"</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>q_en_emb <span class="op">=</span> model.encode(q)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"30ff1b33f9a44939b0840da248855b95","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.253079Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.252431Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.366762Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.365727Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.253038Z&quot;}" data-trusted="true" data-execution_count="34">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>scores_en, samples_en <span class="op">=</span> embeddings_dataset.get_nearest_examples(<span class="st">"embeddings"</span>, model.encode(q_en), k<span class="op">=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"ef7232129be8453cba89c61e4c7100bc","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.368749Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.368262Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.378659Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.377251Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.368707Z&quot;}" data-trusted="true" data-execution_count="35">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>samples_df_en <span class="op">=</span> pd.DataFrame.from_dict(samples_en)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>samples_df_en[<span class="st">"scores"</span>] <span class="op">=</span> scores_en</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>samples_df_en.sort_values(<span class="st">"scores"</span>, ascending<span class="op">=</span><span class="va">False</span>, inplace<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.381320Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.380270Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.411171Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.410143Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.381278Z&quot;}" data-trusted="true" data-execution_count="36">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>samples_df_en</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="36">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">session</th>
+<th data-quarto-table-cell-role="th">firstName</th>
+<th data-quarto-table-cell-role="th">lastName</th>
+<th data-quarto-table-cell-role="th">speechContent</th>
+<th data-quarto-table-cell-role="th">position</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">faction</th>
+<th data-quarto-table-cell-role="th">embeddings</th>
+<th data-quarto-table-cell-role="th">scores</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">9</td>
+<td>1006817</td>
+<td>31</td>
+<td>Anja</td>
+<td>Weisgerber</td>
+<td>\n\nSehr geehrter Herr Präsident! Werte Kolleg...</td>
+<td>Member of Parliament</td>
+<td>2018-05-15</td>
+<td>CDU/CSU</td>
+<td>[-0.026334811002016068, 0.15515056252479553, -...</td>
+<td>41.945499</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">8</td>
+<td>1032505</td>
+<td>129</td>
+<td>Marie-Luise</td>
+<td>Dött</td>
+<td>\n\nSehr geehrter Herr Präsident! Meine Damen ...</td>
+<td>Member of Parliament</td>
+<td>2019-11-26</td>
+<td>CDU/CSU</td>
+<td>[-0.06372411549091339, 0.17748013138771057, 0....</td>
+<td>41.637802</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">7</td>
+<td>1029268</td>
+<td>118</td>
+<td>Anja</td>
+<td>Weisgerber</td>
+<td>\n\nOkay.&nbsp;– Wir schaffen erst Anreize, und in ...</td>
+<td>Member of Parliament</td>
+<td>2019-10-17</td>
+<td>CDU/CSU</td>
+<td>[-0.012752844020724297, 0.19681210815906525, 0...</td>
+<td>41.366852</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">6</td>
+<td>1001346</td>
+<td>7</td>
+<td>Lisa</td>
+<td>Badum</td>
+<td>\n\nNein.&nbsp;– Sie müssen sich erstens endlich an...</td>
+<td>Member of Parliament</td>
+<td>2018-01-18</td>
+<td>Grüne</td>
+<td>[-0.10626056790351868, 0.23017993569374084, -0...</td>
+<td>40.811142</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">5</td>
+<td>1008459</td>
+<td>38</td>
+<td>Svenja</td>
+<td>Schulze</td>
+<td>\n\nHerr Abgeordneter, die Forschungsseite ist...</td>
+<td>Minister</td>
+<td>2018-06-13</td>
+<td>not found</td>
+<td>[0.03885478153824806, -0.16286222636699677, -0...</td>
+<td>40.576042</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1032183</td>
+<td>128</td>
+<td>Andreas</td>
+<td>Jung</td>
+<td>\n\nWir werden mit diesem Klimapaket unserer V...</td>
+<td>Member of Parliament</td>
+<td>2019-11-15</td>
+<td>CDU/CSU</td>
+<td>[-0.05022718012332916, 0.02807101048529148, 0....</td>
+<td>39.967426</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1019612</td>
+<td>80</td>
+<td>Carsten</td>
+<td>Träger</td>
+<td>\n\nSehr geehrte Frau Präsidentin! Kolleginnen...</td>
+<td>Member of Parliament</td>
+<td>2019-02-14</td>
+<td>SPD</td>
+<td>[-0.07200361043214798, 0.14576080441474915, 0....</td>
+<td>39.919750</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1039271</td>
+<td>156</td>
+<td>Anja</td>
+<td>Weisgerber</td>
+<td>\n\nSehr geehrter Herr Kollege Hilse! Klar ist...</td>
+<td>Member of Parliament</td>
+<td>2020-04-23</td>
+<td>CDU/CSU</td>
+<td>[0.034136462956666946, 0.05767284706234932, -0...</td>
+<td>35.132324</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1</td>
+<td>1028351</td>
+<td>115</td>
+<td>Andreas</td>
+<td>Jung</td>
+<td>\n\nHerr Präsident! Liebe Kolleginnen und Koll...</td>
+<td>Member of Parliament</td>
+<td>2019-09-26</td>
+<td>CDU/CSU</td>
+<td>[0.08285392075777054, 0.06978157162666321, 0.0...</td>
+<td>32.600567</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1051468</td>
+<td>197</td>
+<td>Sven-Christian</td>
+<td>Kindler</td>
+<td>\n\nWir brauchen endlich eine Bundesregierung,...</td>
+<td>Member of Parliament</td>
+<td>2020-12-08</td>
+<td>Grüne</td>
+<td>[0.10869952291250229, 0.29951632022857666, -0....</td>
+<td>26.413271</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Indeed: using the English query gives us the same samples as our German query!</p>
+</section>
+<section id="finding-similar-samples" class="level3">
+<h3 class="anchored" data-anchor-id="finding-similar-samples">Finding similar samples</h3>
+<p>Now let’s see what happens when we use one of the samples to query the dataset. In particular, we’ll use the one below:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.413591Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.413180Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.423128Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.422062Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.413549Z&quot;}" data-trusted="true" data-execution_count="37">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>speeches.iloc[<span class="op">-</span><span class="dv">4</span>].speechContent</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="37">
+<pre><code>'\n\nSie müssen das jetzt verkürzen und zum Punkt kommen.'</code></pre>
+</div>
+</div>
+<p>This is one of the Bundestag’s vice presidents telling a member who exceeded his speaking time to come straight to the point. Can we find similar occurrences even though the wording used might have been entirely different? Let’s get the 500 nearest examples:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.425240Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.424712Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.477428Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.476384Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.425181Z&quot;}" data-trusted="true" data-execution_count="38">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> speeches.iloc[<span class="op">-</span><span class="dv">4</span>].speechContent</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>q_emb <span class="op">=</span> model.encode(q)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"f9cc1e23d2174cf7a822f6f8d432f082","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.479771Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.478953Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.699202Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.698198Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.479731Z&quot;}" data-trusted="true" data-execution_count="39">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>scores, samples <span class="op">=</span> embeddings_dataset.get_nearest_examples(<span class="st">"embeddings"</span>, q_emb, k<span class="op">=</span><span class="dv">500</span>)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>samples_df <span class="op">=</span> pd.DataFrame.from_dict(samples)</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>samples_df[<span class="st">"scores"</span>] <span class="op">=</span> scores</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>samples_df.sort_values(<span class="st">"scores"</span>, ascending<span class="op">=</span><span class="va">False</span>, inplace<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-30T13:55:16.727490Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-30T13:55:16.725365Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-30T13:55:16.749454Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-30T13:55:16.748273Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-30T13:55:16.727445Z&quot;}" data-trusted="true" data-execution_count="41">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>samples_df.tail(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="41">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">session</th>
+<th data-quarto-table-cell-role="th">firstName</th>
+<th data-quarto-table-cell-role="th">lastName</th>
+<th data-quarto-table-cell-role="th">speechContent</th>
+<th data-quarto-table-cell-role="th">position</th>
+<th data-quarto-table-cell-role="th">date</th>
+<th data-quarto-table-cell-role="th">faction</th>
+<th data-quarto-table-cell-role="th">embeddings</th>
+<th data-quarto-table-cell-role="th">scores</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1001913</td>
+<td>11</td>
+<td>Thomas</td>
+<td>Oppermann</td>
+<td>\n\nSie müssen langsam zum Ende kommen, Herr K...</td>
+<td>Presidium of Parliament</td>
+<td>2018-02-01</td>
+<td>not found</td>
+<td>[-0.10636333376169205, 0.29633229970932007, 0....</td>
+<td>2.662343e+01</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1030098</td>
+<td>121</td>
+<td>Wolfgang</td>
+<td>Kubicki</td>
+<td>\n\nAber jetzt müssen Sie zum Ende kommen.</td>
+<td>Presidium of Parliament</td>
+<td>2019-10-24</td>
+<td>not found</td>
+<td>[0.03086794912815094, 0.2639564275741577, 0.02...</td>
+<td>2.631995e+01</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1023532</td>
+<td>95</td>
+<td>Petra</td>
+<td>Pau</td>
+<td>\n\nSie müssen jetzt den Punkt setzen, bitte.</td>
+<td>Presidium of Parliament</td>
+<td>2019-04-11</td>
+<td>not found</td>
+<td>[0.2779744863510132, 0.04356134310364723, -0.0...</td>
+<td>2.586150e+01</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>1032602</td>
+<td>129</td>
+<td>Petra</td>
+<td>Pau</td>
+<td>\n\nSie müssen jetzt einen Punkt setzen.</td>
+<td>Presidium of Parliament</td>
+<td>2019-11-26</td>
+<td>not found</td>
+<td>[0.15792761743068695, 0.06023293733596802, -0....</td>
+<td>2.558862e+01</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1060954</td>
+<td>228</td>
+<td>Petra</td>
+<td>Pau</td>
+<td>\n\nSie müssen das jetzt verkürzen und zum Pun...</td>
+<td>Presidium of Parliament</td>
+<td>2021-05-07</td>
+<td>not found</td>
+<td>[0.2084154337644577, 0.5121742486953735, -0.12...</td>
+<td>1.123090e-11</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Again, the results look very promising.</p>
+<p>Of course we merely scratched the surface of what is possible with semantic search, but it hopefully became apparent how embeddings can help us search for examples with a particular meaning.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
