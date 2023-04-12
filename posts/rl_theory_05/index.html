@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-05-13">
+
+<title>iammees - Theory of RL V: Temporal-Difference Learning</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Theory of RL V: Temporal-Difference Learning</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">May 13, 2021</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>Like Monte Carlo (MC) methods, temporal difference (TD) learning methods learn from experience without needing a model of the environment’s dynamics. However, unlike MC methods, TD learning methods can learn from <em>incomplete</em> sequences and thus can be used in continuing environments. Let’s look at this in more detail.</p>
+<p>As we have discussed in the last post, MC methods can only update their value estimates at the end of an episode since they rely on actual returns <span class="math inline">\(G_t = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{T-1} R_T\)</span> which can only be computed from complete trajectories. These actual returns <span class="math inline">\(G_t\)</span> are unbiased estimates of the true value function <span class="math inline">\(v_{\pi}(s)\)</span>, but they are also of high variance because they accumulate the inherent randomness of all transitions in an entire episode (recall that all actions, next states, and rewards are random events). This is why MC methods can be slow and sample inefficient (i.e.&nbsp;we need lots of data to see the signal in the noise). TD learning methods, in contrast, leverage the recursive relationship <span class="math inline">\(V(S_t) = R_{t+1} + \gamma V(S_{t+1})\)</span> to <em>estimate</em> the return and conduct updates <strong>online</strong>. That is, TD learning methods <strong>bootstrap</strong>: in their updates they rely in part on existing estimates instead of exclusively requiring actual rewards. It follows that the TD target has <strong>low variance</strong> (it only accumulates the randomness of a single transition) at the cost of <strong>some bias</strong>. We’ll see below how this plays out.</p>
+<div class="cell" data-execution_count="5">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> count</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gym</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gym_walk</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="td-prediction" class="level2">
+<h2 class="anchored" data-anchor-id="td-prediction">TD Prediction</h2>
+<p>Naturally, we’ll begin by considering the problem of estimating the value function <span class="math inline">\(v_{\pi}\)</span> for a given policy <span class="math inline">\(\pi\)</span>. As was mentioned above, the key characteristic of TD methods is that they estimate <span class="math inline">\(v_{\pi}\)</span> using an estimate of <span class="math inline">\(v_{\pi}\)</span>. But how? With one-step TD, n-step TD, and TD(<span class="math inline">\(\lambda\)</span>) we’ll introduce different methods for TD prediction.</p>
+<section id="td0" class="level3">
+<h3 class="anchored" data-anchor-id="td0">TD(0)</h3>
+<p>TD(0) is the simplest TD learning algorithm. It is also called <strong>one-step TD</strong> since it updates after a single step <span class="math inline">\(S_t, A_t, R_{t+1}, S_{t+1} \sim \pi\)</span> in the environment, that is, immediately after observing the next state <span class="math inline">\(S_{t+1}\)</span> and receiving the reward <span class="math inline">\(R_{t+1}\)</span>. Essentially, the algorithm fully exploits the Markov property. Its update looks like this:</p>
+<p><span class="math display">\[V(S_t) \leftarrow V(S_t) + \alpha \left[ R_{t+1} + \gamma V(S_{t+1}) - V(S_t) \right],\]</span></p>
+<p>where <span class="math inline">\(R_{t+1} + \gamma V(S_{t+1})\)</span> is the <strong>TD target</strong> and <span class="math inline">\(R_{t+1} + \gamma V(S_{t+1}) - V(S_t)\)</span> is the <strong>TD error</strong>. What happens here? Well, TD(0) estimates the return at each step by summing the <em>actual</em> reward <span class="math inline">\(R_{t+1}\)</span> and the discounted <em>estimate</em> of the value of the next state <span class="math inline">\(\gamma V(S_{t+1})\)</span>. The rest of the update should be clear. We compute the TD error and take a small step (defined by the step-size parameter <span class="math inline">\(\alpha\)</span>) in its direction. If <span class="math inline">\(\sum_{t=1}^{\infty} \alpha_t = \infty\)</span> and <span class="math inline">\(\sum_{t=1}^{\infty} \alpha_t^2 &lt; \infty\)</span>, TD(0) is guaranteed to converge to <span class="math inline">\(v_{\pi}\)</span>.</p>
+<div class="cell" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> decay(decay_ratio, start_val, min_val, max_steps, log_start<span class="op">=-</span><span class="dv">2</span>, log_base<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    decay_steps <span class="op">=</span> <span class="bu">int</span>(max_steps <span class="op">*</span> decay_ratio)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    values <span class="op">=</span> np.logspace(log_start, <span class="dv">0</span>, decay_steps, base<span class="op">=</span>log_base, endpoint<span class="op">=</span><span class="va">True</span>)[::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    values <span class="op">=</span> (values <span class="op">-</span> values.<span class="bu">min</span>()) <span class="op">/</span> (values.<span class="bu">max</span>() <span class="op">-</span> values.<span class="bu">min</span>())</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    values <span class="op">=</span> (start_val <span class="op">-</span> min_val) <span class="op">*</span> values <span class="op">+</span> min_val</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    values <span class="op">=</span> np.pad(values, (<span class="dv">0</span>, max_steps <span class="op">-</span> decay_steps), <span class="st">'edge'</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> values</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="7">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> td(env, pi, gamma<span class="op">=</span><span class="fl">1.</span>, n_episodes<span class="op">=</span><span class="dv">500</span>, start_alpha<span class="op">=</span><span class="fl">0.5</span>, min_alpha<span class="op">=</span><span class="fl">0.01</span>, alpha_decay_ratio<span class="op">=</span><span class="fl">0.5</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    n_states <span class="op">=</span> env.observation_space.n</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> np.zeros(n_states)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    alphas <span class="op">=</span> decay(alpha_decay_ratio, start_alpha, min_alpha, n_episodes)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ep <span class="kw">in</span> <span class="bu">range</span>(n_episodes):</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> env.reset()</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        done <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="kw">not</span> done:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>            action <span class="op">=</span> pi[state]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            next_state, reward, done, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            value_next <span class="op">=</span> value[next_state] <span class="cf">if</span> <span class="kw">not</span> done <span class="cf">else</span> <span class="fl">0.</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            value[state] <span class="op">+=</span> alphas[ep] <span class="op">*</span> ((reward <span class="op">+</span> gamma <span class="op">*</span> value_next) <span class="op">-</span> value[state])</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            <span class="co">#td_target = reward + gamma * value[next_state] * (not done)</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            <span class="co">#td_error = td_target - value[state]</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="co">#value[state] = value[state] + alphas[ep] * td_error</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>            state <span class="op">=</span> next_state</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="8">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> gym.make(<span class="st">"RandomWalkFive-v0"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>pi <span class="op">=</span> {state : <span class="dv">0</span> <span class="cf">for</span> state <span class="kw">in</span> <span class="bu">range</span>(env.prob.shape[<span class="dv">0</span>])}</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>td_val <span class="op">=</span> td(env, pi)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="9">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>env.render(values<span class="op">=</span>td_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-6-output-1.png" class="quarto-discovered-preview-image img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="13">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> gym.make(<span class="st">"FrozenLake4x4-v2"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>pi <span class="op">=</span> [<span class="dv">1</span> <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">16</span>)]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>td_val <span class="op">=</span> td(env, pi)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="12">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>env.render(values<span class="op">=</span>td_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-8-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="n-step-td-learning" class="level3">
+<h3 class="anchored" data-anchor-id="n-step-td-learning"><span class="math inline">\(n\)</span>-step TD Learning</h3>
+<p>With MC and TD(0) we now have introduced two rather extreme approaches, each having its own advantages. While MC methods update each state based on the entire sequence of actual rewards received from that state until the end of the episode, TD(0) updates are merely based on the next reward, using the current estimate of the next state’s value as a proxy for the remaining rewards. You are not mistaken if you reckon that there must exist a range of algorithms in between those extremes. Indeed, we could perform a two-step update based on the first two rewards and the estimated value of the subsequent state. Similary, we could perform three-step updates, four-step updates, and so on. <span class="math inline">\(n\)</span>-step TD learning is a generalization of this idea. With an intermediate value for <span class="math inline">\(n\)</span> it often performs better than either TD(0) and MC.</p>
+<p>Suppose we want to update the estimated value of state <span class="math inline">\(S_t\)</span> based on the state-reward sequence <span class="math inline">\(S_t, R_{t+1}, S_{t+1}, R_{t+2}, S_{t+2}, \dots, R_T, S_T\)</span>. In TD(0), the target would be the <strong>one-step return</strong> <span class="math inline">\(G_{t:t+1}\)</span>:</p>
+<p><span class="math display">\[G_{t:t+1} = R_{t+1} + \gamma V_t(S_{t+1}),\]</span></p>
+<p>where <span class="math inline">\(V_t\)</span> is the estimate of <span class="math inline">\(v_{\pi}\)</span> at time <span class="math inline">\(t\)</span> and the subscripts on <span class="math inline">\(G_{t:t+1}\)</span> indicate that, to estimate the return at time <span class="math inline">\(t\)</span>, we use actual rewards up until time <span class="math inline">\(t{+}1\)</span> and the discounted estimate <span class="math inline">\(\gamma V_t(S_{t+1})\)</span> to correct for the absence of the other terms <span class="math inline">\(\gamma R_{t+1} + \gamma^2 R_{t+3} + \dots + \gamma^{T-t-1}R_T\)</span>.</p>
+<p>A two-step update would simply use the <strong>two-step return</strong> as a target:</p>
+<p><span class="math display">\[G_{t:t+2} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V_{t+1}(S_{t+2}),\]</span></p>
+<p>where we use <span class="math inline">\(\gamma^2 V_{t+1}(S_{t+2})\)</span> as a proxy for the terms <span class="math inline">\(\gamma^2 R_{t+3} + \gamma^3 R_{t+4} + \dots + \gamma^{T-t-1} R_T\)</span>.</p>
+<p>Accordingly, we can perform an n-step update using the <span class="math inline">\(n\)</span><strong>-step return</strong> as our target:</p>
+<p><span class="math display">\[G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n}),\]</span></p>
+<p>for all <span class="math inline">\(n, t\)</span> such that <span class="math inline">\(n \geq 1\)</span> and <span class="math inline">\(0 \leq t &lt; T - n\)</span>. If <span class="math inline">\(t+n \geq T\)</span>, the <span class="math inline">\(n\)</span>-step return would be equal to the complete return, meaning that we would effectively perform an MC update.</p>
+<p>The update of the <strong>n-step TD</strong> algorithm looks like this:</p>
+<p><span class="math display">\[V_{t+n}(S_t) \leftarrow V_{t+n-1}(S_t) + \alpha \left[ G_{t:t+n} - V_{t+n-1}(S_t) \right]\]</span></p>
+<p>Note that no update can occur until <span class="math inline">\(R_{t+n}\)</span> is known, i.e.&nbsp;the updates set in at time step <span class="math inline">\(t+n\)</span> and multiple updates are conducted when the episode has terminated (the updates are catching up in a sense).</p>
+<div class="cell" data-execution_count="14">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> n_step_td(env, </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>              pi, </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>              n_step<span class="op">=</span><span class="dv">3</span>, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>              gamma<span class="op">=</span><span class="fl">1.</span>, </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>              n_episodes<span class="op">=</span><span class="dv">500</span>, </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>              start_alpha<span class="op">=</span><span class="fl">0.5</span>, </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>              min_alpha<span class="op">=</span><span class="fl">0.01</span>, </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>              alpha_decay_ratio<span class="op">=</span><span class="fl">0.5</span>):</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    n_states <span class="op">=</span> env.observation_space.n</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> np.zeros(n_states)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    discounts <span class="op">=</span> np.power(gamma, np.arange(n_step<span class="op">+</span><span class="dv">1</span>))</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    alphas <span class="op">=</span> decay(alpha_decay_ratio, start_alpha, min_alpha, n_episodes)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ep <span class="kw">in</span> <span class="bu">range</span>(n_episodes):</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> env.reset()</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        done <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        trajectory <span class="op">=</span> []</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="kw">not</span> done <span class="kw">or</span> trajectory <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>            trajectory <span class="op">=</span> trajectory[<span class="dv">1</span>:]</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">while</span> <span class="kw">not</span> done <span class="kw">and</span> <span class="bu">len</span>(trajectory) <span class="op">&lt;</span> n_step:</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>                action <span class="op">=</span> pi[state]</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>                next_state, reward, done, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>                trajectory.append((state, reward, next_state, done))</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>                state <span class="op">=</span> next_state</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> done:</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">break</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>            n <span class="op">=</span> <span class="bu">len</span>(trajectory)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>            state_ <span class="op">=</span> trajectory[<span class="dv">0</span>][<span class="dv">0</span>]</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>            G <span class="op">=</span> discounts[:n] <span class="op">*</span> np.array(trajectory)[:, <span class="dv">1</span>]</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>            value_next <span class="op">=</span> value[next_state] <span class="cf">if</span> <span class="kw">not</span> done <span class="cf">else</span> <span class="fl">0.</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>            ntd_target <span class="op">=</span> np.<span class="bu">sum</span>(np.append(G, discounts[<span class="op">-</span><span class="dv">1</span>] <span class="op">*</span> value_next))</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>            value[state_] <span class="op">+=</span> alphas[ep] <span class="op">*</span> (ntd_target <span class="op">-</span> value[state_])</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> trajectory[<span class="dv">0</span>][<span class="dv">3</span>] <span class="kw">and</span> <span class="bu">len</span>(trajectory) <span class="op">==</span> <span class="dv">1</span>:</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>                trajectory <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="19">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ntd_val <span class="op">=</span> n_step_td(env, pi, n_step<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="20">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env.render(values<span class="op">=</span>ntd_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-11-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="tdlambda" class="level3">
+<h3 class="anchored" data-anchor-id="tdlambda">TD(<span class="math inline">\(\lambda\)</span>)</h3>
+<p>Inevitably, the question arises which <span class="math inline">\(n\)</span> we should choose to obtain the best results. But instead of choosing a particular <span class="math inline">\(n\)</span>, we can take the concept of TD learning one step further by combining multiple <span class="math inline">\(n\)</span>-steps into a single update. One particular way of doing this is the <span class="math inline">\(\lambda\)</span>-return which is discussed below. We’ll first put it to use in the forward-view TD(<span class="math inline">\(\lambda\)</span>) algorithm which updates the state-value estimates with a weighted combination of all <span class="math inline">\(n\)</span>-step targets at the end of an episode. Then, we’ll introduce eligibility traces and the more elegant backward-view TD(<span class="math inline">\(\lambda\)</span>) algorithm which can perform partial updates at each step.</p>
+<section id="the-lambda-return" class="level4">
+<h4 class="anchored" data-anchor-id="the-lambda-return">The <span class="math inline">\(\lambda\)</span>-return</h4>
+<p>In the last section we introduced the <span class="math inline">\(n\)</span>-step return, defined as the sum of the first <span class="math inline">\(n\)</span> rewards plus the estimated value of the state reached in <span class="math inline">\(n\)</span> steps (each properly discounted):</p>
+<p><span class="math display">\[G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n})\]</span></p>
+<p>To improve on this we can use the average of <span class="math inline">\(n\)</span>-step returns for different <span class="math inline">\(n\)</span> instead of choosing a specific <span class="math inline">\(n\)</span>. The <span class="math inline">\(\lambda\)</span>-return, in particular, <strong>averages all the <span class="math inline">\(n\)</span>-step updates</strong>, each weighted proportionally to <span class="math inline">\(\lambda^{n-1}\)</span> (where <span class="math inline">\(\lambda \in [0,1])\)</span> and normalized by a factor of <span class="math inline">\(1-\lambda\)</span> so that the weights sum to <span class="math inline">\(1\)</span>. The resulting formula for the <span class="math inline">\(\lambda\)</span>-return looks like this:</p>
+<p><span class="math display">\[G_t^{\lambda} = (1-\lambda) \sum_{n=1}^{T-t-1} \lambda^{n-1} G_{t:t+n} + \lambda^{T-t-1} G_{t:T} = (1 - \lambda) \sum_{n=1}^{\infty} \lambda^{n-1} G_{t:t+n}\]</span></p>
+<p>The one-step return receives the largest weight, <span class="math inline">\(1-\lambda\)</span>, the two-step return receives the next largest weight, <span class="math inline">\((1-\lambda)\lambda\)</span>, and so on. This goes on for all <span class="math inline">\(n\)</span>-steps until a terminal state is reached. Then the <span class="math inline">\(n\)</span>-step return is equal to the ordinary return <span class="math inline">\(G_t\)</span> and weighted by <span class="math inline">\(\lambda^{T-t-1}\)</span>:</p>
+<p><span class="math display">\[
+\begin{align}
+    G_{t:t+1} = R_{t+1} + \gamma V_t(S_{t+1}) &amp; \qquad \text{is weighted by}\;\; (1 - \lambda) \\
+    G_{t:t+2} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V_{t+1}(S_{t+2}) &amp; \qquad \text{is weighted by}\;\; (1 - \lambda)\lambda \\
+    G_{t:t+3} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \gamma^3 V_{t+2}(S_{t+3}) &amp; \qquad \text{is weighted by}\;\; (1 - \lambda)\lambda^2 \\
+    G_{t:t+n} = R_{t+1} + \dots + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1} (S_{t+n}) &amp; \qquad \text{is weighted by}\;\; (1 - \lambda)\lambda^{n-1} \\
+    G_{t:T} = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{T-1} R_T &amp; \qquad \text{is weighted by}\;\; \lambda^{T-t-1}
+\end{align}
+\]</span></p>
+<p>When looking at the formula it should become clear that the <span class="math inline">\(\lambda\)</span>-return offers a spectrum of methods spanning from one-step TD (<span class="math inline">\(\lambda=0\)</span>) to MC (<span class="math inline">\(\lambda=1\)</span>), where methods in between often perform better than both extremes.</p>
+</section>
+<section id="forward-view-tdlambda" class="level4">
+<h4 class="anchored" data-anchor-id="forward-view-tdlambda">forward-view TD(<span class="math inline">\(\lambda\)</span>)</h4>
+<p>Forward-view TD(<span class="math inline">\(\lambda\)</span>) is the simplest learning algorithm applying the <span class="math inline">\(\lambda\)</span>-return. Its update looks like this:</p>
+<p><span class="math display">\[V_T(S_t) = V_{T-1}(S_t) + \alpha_t \left[ G_{t:T}^{\lambda} - V_{T-1}(S_t) \right],\]</span></p>
+<p>where <span class="math inline">\(G_{t:T}^{\lambda}\)</span> is the <span class="math inline">\(\lambda\)</span>-return and <span class="math inline">\(G_{t:T}^{\lambda} - V_{T-1}(S_t)\)</span> is the <span class="math inline">\(\lambda\)</span>-error. Its problem, however, is that the algorithm like MC methods has to wait until the end of an episode before it can make updates to the value function estimates. Fortunately, researchers have developed backward-view TD(<span class="math inline">\(\lambda\)</span>), a more sophisticated method that can apply partial updates on every time step.</p>
+</section>
+<section id="eligibility-traces-and-backward-view-tdlambda" class="level4">
+<h4 class="anchored" data-anchor-id="eligibility-traces-and-backward-view-tdlambda">Eligibility traces and backward-view TD(<span class="math inline">\(\lambda\)</span>)</h4>
+<p>Backward-view TD(<span class="math inline">\(\lambda\)</span>), or simply <strong>TD(<span class="math inline">\(\lambda\)</span>)</strong> for short, uses <strong>eligibility traces to determine if, and by how much, a state is eligible for an update</strong>. An eligibility trace is a <strong>memory vector</strong> that tracks the recently visited states. Let’s walk through the process to see how the algorithm works.</p>
+<p>In the beginning, all eligibility traces are initialized to zero:</p>
+<p><span class="math display">\[E_0(s) = 0, \quad \forall s \in \mathcal{S}\]</span></p>
+<p>When the agent has interacted with the environment for one cycle <span class="math inline">\(S_t, A_t, R_{t+1}, S_{t+1} \sim \pi_{t:t+1}\)</span>, we increment the eligibility of state <span class="math inline">\(S_t\)</span> by <span class="math inline">\(1\)</span></p>
+<p><span class="math display">\[E_t(S_t) = E_t(S_t) + 1\]</span></p>
+<p>and calculate the <strong>TD error</strong></p>
+<p><span class="math display">\[\delta_{t} = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\]</span></p>
+<p>in order to perform the following update:</p>
+<p><span class="math display">\[V_{t+1}(s) = V_t(s) + \alpha_t \delta_{t}E_t(s), \quad \forall s \in \mathcal{S}\]</span></p>
+<p>By multiplying the update for all states by the eligibility trace <span class="math inline">\(E\)</span> we ensure that each state is updated according to its respective eligibility.</p>
+<p>Finally, we decay the eligibility trace vector by <span class="math inline">\(\lambda\)</span> (the same <span class="math inline">\(\lambda\)</span> as introduced with the <span class="math inline">\(\lambda\)</span>-return, also called the <strong>trace-decay parameter</strong>) and <span class="math inline">\(\gamma\)</span> (the discount factor) so that the traces fade away:</p>
+<p><span class="math display">\[E_{t+1} = \gamma \lambda  E_t\]</span></p>
+<p>In essence, TD(<span class="math inline">\(\lambda\)</span>) has three advantages:</p>
+<ul>
+<li>It is flexible since it spans methods from one-step TD to MC, depending on <span class="math inline">\(\lambda\)</span>.</li>
+<li>It performs updates at every time step which is more computationally efficient.</li>
+<li>It makes sure that learning occurs continually and affects the behavior of the agent right away (i.e.&nbsp;immediately after a state is encountered).</li>
+</ul>
+<div class="cell" data-execution_count="24">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> td_lambda(env,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>              pi,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>              gamma<span class="op">=</span><span class="fl">1.</span>, </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>              lambda_ <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>              n_episodes<span class="op">=</span><span class="dv">500</span>, </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>              start_alpha<span class="op">=</span><span class="fl">0.5</span>, </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>              min_alpha<span class="op">=</span><span class="fl">0.01</span>, </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>              alpha_decay_ratio<span class="op">=</span><span class="fl">0.5</span>):</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    n_states <span class="op">=</span> env.observation_space.n</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> np.zeros(n_states)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    E <span class="op">=</span> np.zeros(n_states)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    alphas <span class="op">=</span> decay(alpha_decay_ratio, start_alpha, min_alpha, n_episodes)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ep <span class="kw">in</span> <span class="bu">range</span>(n_episodes):</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        E.fill(<span class="dv">0</span>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> env.reset()</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        done <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="kw">not</span> done:</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>            action <span class="op">=</span> pi[state]</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>            next_state, reward, done, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>            value_next <span class="op">=</span> value[next_state] <span class="cf">if</span> <span class="kw">not</span> done <span class="cf">else</span> <span class="fl">0.</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>            E[state] <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>            value <span class="op">+=</span> alphas[ep] <span class="op">*</span> ((reward <span class="op">+</span> gamma <span class="op">*</span> value[next_state]) <span class="op">-</span> value[state]) <span class="op">*</span> E</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>            E <span class="op">*=</span> gamma <span class="op">*</span> lambda_</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>            state <span class="op">=</span> next_state</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="25">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>tdl_val <span class="op">=</span> td_lambda(env, pi)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="27">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>env.render(values<span class="op">=</span>tdl_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-14-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="td-control" class="level2">
+<h2 class="anchored" data-anchor-id="td-control">TD Control</h2>
+<p>To extend TD methods to the control problem, we once again draw on the pattern of generalized policy iteration (GPI). Recall that GPI consists of two interacting processes: predicting the value function of the current policy (for which we now use TD prediction) and improving the policy with respect to the current value function (where we have to deal with the exploration-exploitation trade-off). With this in mind, we distinguish two classes of methods. <strong>On-policy methods</strong> evaluate and improve the policy that is used to make decisions, which means that the agent has to seek the best policy that still accounts for exploration. <strong>Off-policy methods</strong>, on the other hand, separate both concerns by evaluating and improving a policy (the <strong>target policy</strong>) that is different from the one used to generate the behavior (the <strong>behavior policy</strong>). This is a more complex, but also a more powerful idea: since both policies can be unrelated, the behavior policy can keep sampling all possible actions while the agent learns a deterministic optimal policy.</p>
+<p>We’ll see both concepts in action when we introduce some of the classic RL algorithms below.</p>
+<section id="sarsa" class="level3">
+<h3 class="anchored" data-anchor-id="sarsa">Sarsa</h3>
+<p>Sarsa is an algorithm for <strong>on-policy TD control</strong>, that is, it estimates <span class="math inline">\(q_{\pi}(s,a)\)</span> for the current behavior policy <span class="math inline">\(\pi\)</span> and makes <span class="math inline">\(\pi\)</span> greedy with respect to <span class="math inline">\(q_{\pi}\)</span> (recall that we need to learn an action-value function instead of a state-value function to know which actions to take). Thus, to apply the TD method, we need to look at the transition from one state-action pair to the next. The corresponding sequence <span class="math inline">\(S_t, A_t, R_{t+1}, S_{t+1}, A_{t+1}\)</span> gives rise to the algorithm’s name: Sarsa. Its update, performed after every transition from a nonterminal state <span class="math inline">\(S_t\)</span>, uses every element of this sequence:</p>
+<p><span class="math display">\[Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t) \right]\]</span></p>
+<p>Sarsa converges to an optimal policy if all state-action pairs are visited infinitely often and the policy converges in the limit to the greedy policy (again, this is referred to as being Greedy in the Limit with Infinite Exploration, GLIE).</p>
+<div class="cell" data-execution_count="28">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sarsa(env, </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>          gamma<span class="op">=</span><span class="fl">1.</span>, </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>          n_episodes<span class="op">=</span><span class="dv">5000</span>, </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>          start_eps<span class="op">=</span><span class="fl">1.</span>, </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>          min_eps<span class="op">=</span><span class="fl">0.1</span>, </span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>          eps_decay_ratio<span class="op">=</span><span class="fl">0.9</span>, </span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>          start_alpha<span class="op">=</span><span class="fl">0.5</span>, </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>          min_alpha<span class="op">=</span><span class="fl">0.01</span>, </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>          alpha_decay_ratio<span class="op">=</span><span class="fl">0.5</span>):</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    n_states, n_actions <span class="op">=</span> env.observation_space.n, env.action_space.n</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    alphas <span class="op">=</span> decay(alpha_decay_ratio, start_alpha, min_alpha, n_episodes)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    epsilons <span class="op">=</span> decay(eps_decay_ratio, start_eps, min_eps, n_episodes)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> np.zeros((n_states, n_actions))</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> <span class="kw">lambda</span> state, q, epsilon: np.argmax(q[state]) <span class="cf">if</span> np.random.random() <span class="op">&gt;</span> epsilon <span class="cf">else</span> np.random.randint(<span class="bu">len</span>(q[state]))</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ep <span class="kw">in</span> <span class="bu">range</span>(n_episodes):</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> env.reset()</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        done <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        action <span class="op">=</span> pi(state, q, epsilons[ep])</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="kw">not</span> done:</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>            next_state, reward, done, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>            next_action <span class="op">=</span> pi(next_state, q, epsilons[ep])</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>            q_next <span class="op">=</span> q[next_state][next_action] <span class="cf">if</span> <span class="kw">not</span> done <span class="cf">else</span> <span class="fl">0.</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>            td_target <span class="op">=</span> reward <span class="op">+</span> gamma <span class="op">*</span> q_next</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>            q[state][action] <span class="op">+=</span> alphas[ep] <span class="op">*</span> (td_target <span class="op">-</span> q[state][action])</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>            state, action <span class="op">=</span> next_state, next_action</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> np.<span class="bu">max</span>(q, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> {state: action <span class="cf">for</span> state, action <span class="kw">in</span> <span class="bu">enumerate</span>(np.argmax(q, axis<span class="op">=</span><span class="dv">1</span>))}</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> value, pi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="56">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>sarsa_val, sarsa_pi <span class="op">=</span> sarsa(env, n_episodes<span class="op">=</span><span class="dv">5000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="57">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>env.render(policy<span class="op">=</span>sarsa_pi, values<span class="op">=</span>sarsa_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-17-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="sarsalambda" class="level3">
+<h3 class="anchored" data-anchor-id="sarsalambda">Sarsa(<span class="math inline">\(\lambda\)</span>)</h3>
+<p>The original version of Sarsa, discussed above, is also referred to as one-step Sarsa or Sarsa(0) because it uses the one-step TD target. Correspondingly, Sarsa can be combined with the <span class="math inline">\(n\)</span>-step return to obtain <span class="math inline">\(n\)</span>-step Sarsa, and with the <span class="math inline">\(\lambda\)</span>-return to obtain Sarsa(<span class="math inline">\(\lambda\)</span>). Here, we skip <span class="math inline">\(n\)</span>-step Sarsa und turn our attention to the more powerful Sarsa(<span class="math inline">\(\lambda\)</span>) algorithm right away.</p>
+<p>The key idea of Sarsa(<span class="math inline">\(\lambda\)</span>) is to use the TD(<span class="math inline">\(\lambda\)</span>) prediction method for state-action pairs rather than states. Therefore, we need an eligibility matrix to track each state-action pair instead of an eligibility vector that merely tracks states. Apart from that the method equals TD(<span class="math inline">\(\lambda\)</span>). We begin by initializing each eligibility trace to zero</p>
+<p><span class="math display">\[E_0(s,a) = 0, \quad \forall s \in \mathcal{S}, a \in \mathcal{A}(s)\]</span></p>
+<p>When the agent has interacted with the environment for one sequence <span class="math inline">\(S_t, A_t, R_{t+1}, S_{t+1}, A_{t+1} \sim \pi\)</span>, we increment the eligibility of the state-action pair <span class="math inline">\(S_t, A_t\)</span> by <span class="math inline">\(1\)</span></p>
+<p><span class="math display">\[E_t(S_t, A_t) = E_t(S_t, A_t) + 1,\]</span></p>
+<p>calculate the error</p>
+<p><span class="math display">\[\delta_t = R_{t+1} + \gamma Q_t(S_{t+1}, A_{t+1}) - Q_t(S_t, A_t)\]</span></p>
+<p>and apply the update for every state <span class="math inline">\(s\)</span> and action <span class="math inline">\(a\)</span>:</p>
+<p><span class="math display">\[Q(s,a) \leftarrow Q(s,a) + \alpha_t \delta_t E_t(s,a), \quad \forall s \in \mathcal{S}, a \in \mathcal{A} \]</span></p>
+<p>Finally, we decay the eligibility traces:</p>
+<p><span class="math display">\[E_{t+1}(s,a) = \gamma \lambda E_t(s,a), \quad \forall s \in \mathcal{S}, a \in \mathcal{A}\]</span></p>
+<div class="cell" data-execution_count="58">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sarsa_lambda(env, </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                 gamma<span class="op">=</span><span class="fl">1.</span>, </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                 n_episodes<span class="op">=</span><span class="dv">5000</span>, </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                 lambda_ <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                 replacing_traces<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                 start_eps<span class="op">=</span><span class="fl">1.</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                 min_eps<span class="op">=</span><span class="fl">0.1</span>, </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                 eps_decay_ratio<span class="op">=</span><span class="fl">0.9</span>, </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                 start_alpha<span class="op">=</span><span class="fl">0.5</span>, </span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                 min_alpha<span class="op">=</span><span class="fl">0.01</span>, </span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                 alpha_decay_ratio<span class="op">=</span><span class="fl">0.5</span>):</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    n_states, n_actions <span class="op">=</span> env.observation_space.n, env.action_space.n</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    alphas <span class="op">=</span> decay(alpha_decay_ratio, start_alpha, min_alpha, n_episodes)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    epsilons <span class="op">=</span> decay(eps_decay_ratio, start_eps, min_eps, n_episodes)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> np.zeros((n_states, n_actions))</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    E <span class="op">=</span> np.zeros((n_states, n_actions))</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> <span class="kw">lambda</span> state, q, epsilon: np.argmax(q[state]) <span class="cf">if</span> np.random.random() <span class="op">&gt;</span> epsilon <span class="cf">else</span> np.random.randint(<span class="bu">len</span>(q[state]))</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ep <span class="kw">in</span> <span class="bu">range</span>(n_episodes):</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        E.fill(<span class="dv">0</span>)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> env.reset()</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        done <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        action <span class="op">=</span> pi(state, q, epsilons[ep])</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="kw">not</span> done:</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>            next_state, reward, done, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>            next_action <span class="op">=</span> pi(next_state, q, epsilons[ep])</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>            q_next <span class="op">=</span> q[next_state][next_action] <span class="cf">if</span> <span class="kw">not</span> done <span class="cf">else</span> <span class="fl">0.</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>            td_target <span class="op">=</span> reward <span class="op">+</span> gamma <span class="op">*</span> q_next</span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> replacing_traces:</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>                E[state].fill(<span class="dv">0</span>)</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>            E[state][action] <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> replacing_traces:</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>                E.clip(<span class="dv">0</span>, <span class="dv">1</span>, out<span class="op">=</span>E)</span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a>            q <span class="op">+=</span> alphas[ep] <span class="op">*</span> (td_target <span class="op">-</span> q[state][action]) <span class="op">*</span> E</span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>            E <span class="op">*=</span> gamma <span class="op">*</span> lambda_</span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>            state, action <span class="op">=</span> next_state, next_action</span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> np.<span class="bu">max</span>(q, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> {state: action <span class="cf">for</span> state, action <span class="kw">in</span> <span class="bu">enumerate</span>(np.argmax(q, axis<span class="op">=</span><span class="dv">1</span>))}</span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> value, pi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="59">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>sarsa_lambda_val, sarsa_lambda_pi <span class="op">=</span> sarsa_lambda(env, n_episodes<span class="op">=</span><span class="dv">5000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="60">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>env.render(policy<span class="op">=</span>sarsa_lambda_pi, values<span class="op">=</span>sarsa_lambda_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-20-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="q-learning" class="level3">
+<h3 class="anchored" data-anchor-id="q-learning">Q-learning</h3>
+<p>Unlike Sarsa, Q-learning is an <strong>off-policy TD control</strong> method. This means that the action-value function <span class="math inline">\(Q\)</span> (the one we learn) approximates the optimal action-value function <span class="math inline">\(q_*\)</span> independent of the policy being followed. For the convergence of the algorithm it is merely required that the behavior policy continues to visit all state-action pairs (this deserves no special attention since any method guaranteeing to find an optimal policy has this requirement).</p>
+<p>Let’s look at the update rule:</p>
+<p><span class="math display">\[Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a Q(S_{t+1}, a) - Q(S_t, A_t) \right]\]</span></p>
+<p>We see that the Q-learning algorithm does <em>not</em> use the behavior policy to choose the action <span class="math inline">\(A_{t+1}\)</span> used in its target. Instead it uses the action with maximum best estimated value (it is not relevant which action this is). Hence, the algorithm is able to find an optimal policy even if the agent acts randomly.</p>
+<div class="cell" data-execution_count="46">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> q_learning(env,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>               gamma<span class="op">=</span><span class="fl">1.</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>               n_episodes<span class="op">=</span><span class="dv">5000</span>,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>               start_eps<span class="op">=</span><span class="fl">1.</span>,</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>               min_eps<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>               eps_decay_ratio<span class="op">=</span><span class="fl">0.9</span>,</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>               start_alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>               min_alpha<span class="op">=</span><span class="fl">0.01</span>,</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>               alpha_decay_ratio<span class="op">=</span><span class="fl">0.5</span>):</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    n_states, n_actions <span class="op">=</span> env.observation_space.n, env.action_space.n</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    alphas <span class="op">=</span> decay(alpha_decay_ratio, start_alpha, min_alpha, n_episodes)</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    epsilons <span class="op">=</span> decay(eps_decay_ratio, start_eps, min_eps, n_episodes)</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> np.zeros((n_states, n_actions))</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    draw_action <span class="op">=</span> <span class="kw">lambda</span> state, q, epsilon: np.argmax(q[state]) <span class="cf">if</span> np.random.random() <span class="op">&gt;</span> epsilon <span class="cf">else</span> np.random.randint(<span class="bu">len</span>(q[state]))</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ep <span class="kw">in</span> <span class="bu">range</span>(n_episodes):</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> env.reset()</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>        done <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="kw">not</span> done:</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>            action <span class="op">=</span> draw_action(state, q, epsilons[ep])</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>            next_state, reward, done, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>            q_next <span class="op">=</span> np.<span class="bu">max</span>(q[next_state, :]) <span class="cf">if</span> <span class="kw">not</span> done <span class="cf">else</span> <span class="fl">0.</span></span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>            td_target <span class="op">=</span> reward <span class="op">+</span> gamma <span class="op">*</span> q_next</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>            q[state][action] <span class="op">+=</span> alphas[ep] <span class="op">*</span> (td_target <span class="op">-</span> q[state][action])</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>            state <span class="op">=</span> next_state</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> np.<span class="bu">max</span>(q, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> {state: action <span class="cf">for</span> state, action <span class="kw">in</span> <span class="bu">enumerate</span>(np.argmax(q, axis<span class="op">=</span><span class="dv">1</span>))}</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> value, pi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="61">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>q_val, q_pi <span class="op">=</span> q_learning(env, n_episodes<span class="op">=</span><span class="dv">5000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="62">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>env.render(policy<span class="op">=</span>q_pi, values<span class="op">=</span>q_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-23-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="double-q-learning" class="level3">
+<h3 class="anchored" data-anchor-id="double-q-learning">Double Q-learning</h3>
+<p>A problem with the Q-learning algorithm is that it overestimates the action-value function: on every step it uses a maximum over estimated values as an estimate of the true maximum action-value of the next state, resulting in what can be a substantial positive bias. To illustrate this, just imagine a state <span class="math inline">\(s\)</span> where five actions <span class="math inline">\(a\)</span> can be taken whose true values <span class="math inline">\(q(s,a)\)</span> are zero, but whose estimated values <span class="math inline">\(Q(s,a)\)</span> are uncertain and distributed around zero: <span class="math inline">\(-0.33, 0.70, 0.05, -0.16, 0.48\)</span>. While the maximum of the true action-values is zero, the maximum of the estimates is always positive (here: <span class="math inline">\(0.70\)</span>). This <strong>maximization bias</strong> is mitigated by an idea called <strong>double learning</strong>. In Double Q-learning, we keep <strong>two separate estimates of the action-value function</strong>, <span class="math inline">\(Q_1\)</span> and <span class="math inline">\(Q_2\)</span>. At each time step, we randomly choose one of them to determine the action (the action with the highest estimated value), and the other one to provide the estimated value of that action.</p>
+<p>If we choose <span class="math inline">\(Q_1\)</span> to determine the action, the update is</p>
+<p><span class="math display">\[ Q_1(S_t, A_t) \leftarrow Q_1(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma Q_{2}\left(S_{t+1}, \text{argmax}_a Q_1(S_{t+1}, a) \right) - Q_1(S_t, A_t) \right].\]</span></p>
+<p>If we choose <span class="math inline">\(Q_2\)</span> to determine the action, we simply switch <span class="math inline">\(Q_1\)</span> and <span class="math inline">\(Q_2\)</span> to obtain the following update:</p>
+<p><span class="math display">\[Q_2(S_t, A_t) \leftarrow Q_2(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma Q_1\left(S_{t+1}, \text{argmax}_a Q_2(S_{t+1}, a) \right) - Q_2(S_t, A_t) \right].\]</span></p>
+<p>The behavior policy can use both estimates of the <span class="math inline">\(Q\)</span>-function to interact with the environment (by using the average or the sum, for instance).</p>
+<div class="cell" data-execution_count="65">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> double_q_learning(env,</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                      gamma<span class="op">=</span><span class="fl">1.</span>,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                      n_episodes<span class="op">=</span><span class="dv">5000</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                      start_eps<span class="op">=</span><span class="fl">1.</span>,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                      min_eps<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                      eps_decay_ratio<span class="op">=</span><span class="fl">0.9</span>,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>                      start_alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>                      min_alpha<span class="op">=</span><span class="fl">0.01</span>,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                      alpha_decay_ratio<span class="op">=</span><span class="fl">0.5</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>                      ):</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    n_states, n_actions <span class="op">=</span> env.observation_space.n, env.action_space.n</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    alphas <span class="op">=</span> decay(alpha_decay_ratio, start_alpha, min_alpha, n_episodes)</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    epsilons <span class="op">=</span> decay(eps_decay_ratio, start_eps, min_eps, n_episodes)</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    q1 <span class="op">=</span> np.zeros((n_states, n_actions))</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    q2 <span class="op">=</span> np.zeros((n_states, n_actions))</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    draw_action <span class="op">=</span> <span class="kw">lambda</span> state, q, epsilon: np.argmax(q[state]) <span class="cf">if</span> np.random.random() <span class="op">&gt;</span> epsilon <span class="cf">else</span> np.random.randint(<span class="bu">len</span>(q[state]))</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ep <span class="kw">in</span> <span class="bu">range</span>(n_episodes):</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> env.reset()</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>        done <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="kw">not</span> done:</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>            action <span class="op">=</span> draw_action(state, (q1 <span class="op">+</span> q2)<span class="op">/</span><span class="dv">2</span>, epsilons[ep])</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>            next_state, reward, done, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> np.random.randint(<span class="dv">2</span>):</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>                td_target <span class="op">=</span> reward <span class="op">+</span> gamma <span class="op">*</span> q2[next_state][np.argmax(q1[next_state])] <span class="op">*</span> (<span class="kw">not</span> done)</span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>                q1[state][action] <span class="op">+=</span> alphas[ep] <span class="op">*</span> (td_target <span class="op">-</span> q1[state][action])</span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>                td_target <span class="op">=</span> reward <span class="op">+</span> gamma <span class="op">*</span> q1[next_state][np.argmax(q2[next_state])] <span class="op">*</span> (<span class="kw">not</span> done)</span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>                q2[state][action] <span class="op">+=</span> alphas[ep] <span class="op">*</span> (td_target <span class="op">-</span> q2[state][action])</span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>            state <span class="op">=</span> next_state</span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> (q1 <span class="op">+</span> q2)<span class="op">/</span><span class="dv">2</span></span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> np.<span class="bu">max</span>(q, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> {state: action <span class="cf">for</span> state, action <span class="kw">in</span> <span class="bu">enumerate</span>(np.argmax(q, axis<span class="op">=</span><span class="dv">1</span>))}</span>
+<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> value, pi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="71">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> gym.make(<span class="st">"FrozenLake4x4-v2"</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>dq_val, dq_pi <span class="op">=</span> double_q_learning(env, n_episodes<span class="op">=</span><span class="dv">20000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="72">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>env.render(policy<span class="op">=</span>dq_pi, values<span class="op">=</span>dq_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-26-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-04-15">
+
+<title>iammees - Theory of RL I: Intro to Reinforcement Learning</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Theory of RL I: Intro to Reinforcement Learning</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">April 15, 2021</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>Reinforcement learning (RL) is the task of <strong>learning how to behave in an uncertain environment by interacting with it in order to achieve a goal</strong>. In that sense, RL closely resembles the way humans learn: while supervised learning means learning from labeled examples and unsupervised learning is concerned with finding patterns in unlabeled data, RL is tasked with <strong>solving sequential decision-making problems under uncertainty</strong>.</p>
+<p>In RL, the learning algorithm is called <strong>agent</strong> and interacts over a <strong>sequence of discrete time steps</strong> with an <strong>environment</strong> that may be incompletely controllable as well as incompletely known. At each time step, the agent receives a representation of the environment’s <strong>state</strong> which he uses to select an <strong>action</strong>. In the following time step, the environment has reached a new state and the agent gets a numerical <strong>reward</strong> signal to help him evaluate his choice of action. The agent’s goal is to maximize the cumulative reward received by developing an optimal <strong>policy</strong>, i.e.&nbsp;an optimal strategy for selecting actions depending on the state of the environment. This continued interaction can be formalized by a mathematical framework called <strong>Markov decision process (MDP)</strong> that serves as the theoretical foundation of RL algorithms. Its components are introduced below.</p>
+<section id="terminology" class="level2">
+<h2 class="anchored" data-anchor-id="terminology">Terminology</h2>
+<section id="agent" class="level3">
+<h3 class="anchored" data-anchor-id="agent">Agent</h3>
+<p>An agent is a <strong>decision maker</strong> in an environment. It can sense at least parts of that environment and it can choose actions to influence that environment. Its goal is to maximize cumulative rewards by finding the optimal strategy to navigate the environment. Thus, an agent can be seen as following a process with three steps:</p>
+<ol type="1">
+<li>Interaction with the environment (by observing its state and choosing an action)</li>
+<li>Evaluation of the current behavior</li>
+<li>Improvement of the behavior to fare better in the future</li>
+</ol>
+<p>In practice, the decision-making algorithm serves as the agent.</p>
+</section>
+<section id="environment" class="level3">
+<h3 class="anchored" data-anchor-id="environment">Environment</h3>
+<p>The environment bundles together everything outside of the agent and <strong>embodies the problem or task that the agent faces</strong>. Therefore, it is crucial to think about the boundary between agents and the environment. Agents are decision makers <em>only</em>. <strong>Everything an agent has no absolute control over</strong> (i.e.&nbsp;cannot change arbitrarily) belongs to its environment. For example, even the sensors, motors, arms, etc. of a robot are typically considered to be part of the environment. The agent in this case is only the algorithm that controls the robot. This does <em>not</em> mean that everything in the environment is <em>unknown</em> to the agent, however. The agent can observe at least parts of the environment and may even know exactly which rules govern the environment’s dynamics.</p>
+</section>
+<section id="state-and-observation" class="level3">
+<h3 class="anchored" data-anchor-id="state-and-observation">State and Observation</h3>
+<p>An environment can be represented by a set of variables called the <strong>state</strong>. The state space <span class="math inline">\(\mathcal{S}\)</span> (itself a set) defines which values those variables can possibly take. A state <span class="math inline">\(s \in \mathcal{S}\)</span> is simply an instantiation of the state space, i.e.&nbsp;a <strong>unique configuration of the environment</strong> at a particular point in time. While <span class="math inline">\(\mathcal{S}\)</span> can be finite or infinite, the set of variables that compose a single state <span class="math inline">\(s\)</span> has to be finite and of equal size for every state. The state of the environment at time step <span class="math inline">\(t\)</span> is denoted <span class="math inline">\(S_t\)</span>.</p>
+<p>In the MDP framework, we assume that the states 1) are fully observable, i.e.&nbsp;fully capture the internals of the environment, and 2) contain all variables required to make them independent of all other states, i.e.&nbsp;they are a self-contained representation of the problem. If an agent – in violation of that assumption – can only partially observe the environment, the information available to the agent is called an <strong>observation</strong> <span class="math inline">\(o\)</span>. The set of all possible values an observation can take is then called the observation space <span class="math inline">\(\mathcal{O}\)</span>. This is a more general (and more realistic) framing of the problem that can be seen as an extension of the MDP framework. It is referred to as POMDP (Partially Observable Markov Decision Process). It should be noted, though, that both terms (state and observation) are often used interchangeably despite their slightly different meanings.</p>
+</section>
+<section id="action" class="level3">
+<h3 class="anchored" data-anchor-id="action">Action</h3>
+<p>At every time step, an agent can either deterministically or stochastically select an action <span class="math inline">\(a\)</span> to <strong>influence the environment</strong>. The set of all possible actions is called the action space <span class="math inline">\(\mathcal{A}\)</span> and can be finite or infinite. It is possible that not every action is available in every state and that an action doesn’t affect the environment at all (i.e., a no-op action, meaning that the environment stays in the same state). The action selected at time step <span class="math inline">\(t\)</span> is denoted <span class="math inline">\(A_t\)</span>.</p>
+</section>
+<section id="transition-function" class="level3">
+<h3 class="anchored" data-anchor-id="transition-function">Transition function</h3>
+<p>In response to the action of an agent <strong>the environment may change its state</strong> (“may” because it can also stay in the same state). The transition to a new state <span class="math inline">\(s'\)</span> depends on the old state <span class="math inline">\(s\)</span> and an action <span class="math inline">\(a\)</span> and is either deterministically or stochastically defined by the state-transition function <span class="math inline">\(p(s' \vert s, a)\)</span> which outputs the probability of the transition from state <span class="math inline">\(s\)</span> to <span class="math inline">\(s'\)</span> when taking action <span class="math inline">\(a\)</span>.</p>
+<p><span class="math display">\[p(s' \vert s, a) = P(S_t = s' \vert S_{t-1} = s, A_{t-1}=a)\]</span></p>
+<p><span class="math display">\[\sum_{s' \in\ \mathcal{S}} p(s' \vert s, a) = 1, \forall s \in \mathcal{S}, \forall a \in \mathcal{A}(s)\]</span></p>
+<p>Many RL algorithms assume that the probability distribution of transitions does not change over time. However, this <strong>stationarity assumption</strong> has to be relaxed in many situations.</p>
+</section>
+<section id="reward-function" class="level3">
+<h3 class="anchored" data-anchor-id="reward-function">Reward function</h3>
+<p>The environment responds to an interaction with an agent by providing a numerical reward which <strong>signals the goodness of the transition</strong>. Rewards can be negative, in which case they can be interpreted as cost or penalty. Since it is the objective of an agent to maximize cumulative rewards, the reward function <strong>defines the goal of an RL task</strong>. Hence, the <strong>design of the reward scheme is critical</strong> when constructing an RL problem. While a sparse reward signal offers less supervision and thus a higher chance of novel, unexpected behavior, a more dense signal usually allows the agent to learn faster, but also injects bias. Usually, the injection of prior knowledge is not something we want: the reward function should only tell the agent <em>what</em> he should achieve and not <em>how</em> he should achieve it. However, adding a time step cost is a common practice.</p>
+<p>The reward function is typically defined as a function that takes the full transition tuple <span class="math inline">\(s,a,s'\)</span> and outputs the expected reward (“expected” since reward signals may be stochastic): <span class="math display">\[r(s,a,s') = \mathbb{E} \left[ R_t\ \vert\ S_{t-1} = s, A_{t-1} = a, S_t = s' \right]\]</span></p>
+<p>Note that the reward signal received at time step <span class="math inline">\(t\)</span>, <span class="math inline">\(R_t\)</span>, not only depends on the state and the action in the last time step <span class="math inline">\(t{-}1\)</span>, but also on the next state <span class="math inline">\(S_t\)</span>. This makes sense: for example, success in a game of tennis not only depends on the state of the game and your shot selection (the action) in the last time step, but also (and rather importantly) on the outcome of your shot (the next state).</p>
+<p>Also note that computing the marginalization over next states gives <span class="math inline">\(r(s,a)\)</span>… <span class="math display">\[r(s,a) = \mathbb{E} \left[R_t \vert S_{t-1} = s, A_{t-1} = a \right]\]</span></p>
+<p>…and further marginalization over actions gives <span class="math inline">\(r(s)\)</span>: <span class="math display">\[r(s) = \mathbb{E} \left[R_t \vert S_{t-1} = s \right]\]</span></p>
+</section>
+<section id="dynamics-of-the-mdp" class="level3">
+<h3 class="anchored" data-anchor-id="dynamics-of-the-mdp">Dynamics of the MDP</h3>
+<p>Having introduced states, actions, and rewards, we can now look at the function <span class="math inline">\(p(s',r \vert s, a)\)</span> which completely defines the <strong>dynamics</strong> of an MDP:</p>
+<p><span class="math display">\[p(s',r \vert s, a) = P(S_t = s', R_t = r\ \vert\ S_{t-1} = s, A_{t-1}=a)\]</span></p>
+<p><span class="math display">\[\sum_{s' \in \mathcal{S}} \sum_{r \in \mathcal{R}} p(s',r \vert s,a) = 1, \forall s \in \mathcal{S}, \forall a \in \mathcal{A}(s)\]</span></p>
+<p>The formula shows that in an MDP the probability of each possible value for <span class="math inline">\(S_t\)</span> and <span class="math inline">\(R_t\)</span> depends <em>only</em> on the state and action in the last time step. That is, the probability of transitioning from state <span class="math inline">\(s\)</span> to <span class="math inline">\(s'\)</span> given action <span class="math inline">\(a\)</span> has to be the same regardless of all states and actions encountered before. Put simply, <strong>the future and the past are conditionally independent <em>given the present</em></strong> because the present state encapsulates all necessary information. This is called the <strong>Markov property</strong>.</p>
+<p>Note that we can quite easily compute the state-transition function <span class="math inline">\(p(s' \vert s, a)\)</span> as well as the reward function <span class="math inline">\(r(s,a,s')\)</span> from the dynamics function <span class="math inline">\(p(s', r \vert s, a)\)</span>:</p>
+<p><span class="math display">\[p(s' \vert s, a) = \sum_{r \in \mathcal{R}} p(s', r \vert s, a)\]</span></p>
+<p><span class="math display">\[r(s,a,s') = \sum_{r \in \mathcal{R}} r \dfrac{p(s',r \vert s, a)}{p(s' \vert s, a)}\]</span></p>
+<p>If an agent has a perfect <strong>model</strong> of the environment’s dynamics, we can, in theory (i.e.&nbsp;disregarding practical issues of computational power and memory), find the optimal solution of an RL task. If there is only incomplete information available we have to approximate the optimal solution.</p>
+</section>
+<section id="episodic-vs.-continuing-tasks" class="level3">
+<h3 class="anchored" data-anchor-id="episodic-vs.-continuing-tasks">Episodic vs.&nbsp;Continuing Tasks</h3>
+<p>In RL, we distinguish between episodic and continuing tasks. <strong>Episodic tasks have a natural ending</strong>, that is, they end in a <strong>terminal state</strong> after which the environment can be reset and the agent has to start from the beginning. A terminal state is a special state that transitions only to itself while providing no reward. To handle episodic tasks, we need to introduce some new notation: while the set of all nonterminal states is denoted <span class="math inline">\(\mathcal{S}\)</span>, the set of all states including terminal states is typically denoted <span class="math inline">\(\mathcal{S}^+\)</span>. The time step when an <strong>episode</strong> terminates is denoted <span class="math inline">\(T\)</span> and usually varies from episode to episode.</p>
+<p>When the interaction of agent and environment does not break naturally into subsequences but goes on continually without an end, the task is <strong>continuing</strong>. Examples might be the control of an on-going process or the trading of stocks. In continuing tasks <span class="math inline">\(T=\infty\)</span>, although in many cases a time step limit is set which results in an episodic task.</p>
+</section>
+<section id="return" class="level3">
+<h3 class="anchored" data-anchor-id="return">Return</h3>
+<p>The idea of <strong>cumulative reward</strong> is formalized by the return which is defined as the <strong>function of future rewards that an agent sets out to maximize <em>in expectation</em></strong>. While rewards only relay an immediate sense of goodness, returns indicate the performance in the long run. In the simplest case the return is just the sum of the reward sequence in an episode:</p>
+<p><span class="math display">\[G_t = R_{t+1} + R_{t+2} +  \dots + R_T\]</span></p>
+<p>However, there are several reasons why we would like to <strong>discount the value of rewards over time</strong>, especially in continuing tasks with infinite reward sequences:</p>
+<ul>
+<li>Reducing the variance of the reward sequence (since future rewards have higher uncertainty, just think about the stock market)</li>
+<li>Focusing on more immediate rewards (since rewards we get sooner may be more attractive than rewards we get later)</li>
+<li>Mathematical and computational convenience (since we don’t need to track the far future)</li>
+</ul>
+<p>Thus, the standard formula for the return looks like this: <span class="math display">\[G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots\ = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\]</span></p>
+<p>The parameter <span class="math inline">\(\gamma\)</span>, <span class="math inline">\(0 \leq \gamma \leq 1\)</span>, is called the <strong>discount rate</strong> and defines how we value future rewards. A reward of <span class="math inline">\(+1\)</span> received in <span class="math inline">\(k\)</span> time steps is worth only <span class="math inline">\(\gamma^{k-1}\)</span> in the present. This means that an agent maximizes only immediate rewards if <span class="math inline">\(\gamma=0\)</span> (the agent is called “myopic” in this case), and becomes more farsighted as <span class="math inline">\(\gamma\)</span> approaches <span class="math inline">\(1\)</span>.</p>
+<p>Finally, note that the return can be defined <strong>recursively</strong>: <span class="math display">\[G_t = R_{t+1} + \gamma G_{t+1}\]</span></p>
+</section>
+<section id="policy-function" class="level3">
+<h3 class="anchored" data-anchor-id="policy-function">Policy function</h3>
+<p>A policy, denoted <span class="math inline">\(\pi\)</span>, is the <strong>behavior function of an agent</strong>: it <strong>maps states of the environment to actions to be taken in those states</strong> and is thus the key feature of an agent.</p>
+<p>In the deterministic case, a policy just maps a state to an action: <span class="math display">\[\pi(s)=a\]</span></p>
+<p>More common is the stochastic case, though. Here, the policy defines a <strong>probability distribution over all available actions for every state</strong>: <span class="math display">\[\pi(a\ \vert\ s) = P_{\pi}(A=a\ \vert\ S=s)\]</span></p>
+<p>A policy <span class="math inline">\(\pi\)</span> is defined to be better than or equal to another policy <span class="math inline">\(\pi'\)</span> if its expected return is greater than or equal to that of <span class="math inline">\(\pi'\)</span> for all states. There is always at least one <strong>optimal policy</strong> <span class="math inline">\(\pi_*\)</span> which is better than or equal to all other policies. Consequently, we want to design an agent that generates (or at least approximates) an optimal policy.</p>
+</section>
+<section id="state-value-function" class="level3">
+<h3 class="anchored" data-anchor-id="state-value-function">State-value function</h3>
+<p>Values form the core of RL. While a reward solely relays an immediate notion of goodness, a value signals what is good in the long run. The <strong>value of a state</strong> is defined as the <strong>return an agent can <em>expect</em> to get if he starts in that state and follows policy <span class="math inline">\(\pi\)</span></strong>. Formally, the state-value function <span class="math inline">\(v_{\pi}\)</span> is defined as: <span class="math display">\[v_{\pi} = \mathbb{E}_{\pi} \left[ G_t \vert S_t = S \right] = \mathbb{E}_{\pi} \left[ \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\ \middle|\ S_t = s \right]\ \ \forall s \in \mathcal{S}\]</span></p>
+<p>Evidently, agents shouldn’t seek to reach states that merely offer high rewards; instead they should go for states with high values (because those states are regularly followed by states with high rewards and thus yield high expected returns). In other words, state-values indicate the long-term desirability of states.</p>
+<p>Interestingly (and importantly), <span class="math inline">\(v_{\pi}\)</span> can be expressed <strong>recursively</strong>:</p>
+<p><span class="math display">\[\begin{align}
+v_{\pi} &amp; = \mathbb{E}_{\pi} \left[ G_t \vert S_t = S \right]\\
+        &amp; = \mathbb{E}_{\pi} \left[ R_{t+1} + \gamma G_{t+1} \vert S_t = S \right]\\
+        &amp; = \sum_{a} \pi(a \vert s) \sum_{s'} \sum_{r} p(s',r \vert s, a) \left[ r + \gamma \mathbb{E}_{\pi} [ G_{t+1} \vert S_{t+1} = s' ] \right]\\
+        &amp; = \sum_{a} \color{orange}{\pi (a \vert s)} \color{black}{\sum_{s', r}} \color{purple}{p(s', r \vert s, a)} \color{blue}{\left[r + \gamma v_{\pi}(s') \right]} \color{black}{,\ \forall\ s \in \mathcal{S}}
+\end{align}\]</span></p>
+<p>Equation (4) is called the <strong>Bellman equation</strong>. It is based on the recursive relationship between the value of a state and the value of its possible successor states. Let’s go over the math in detail. The Bellman equation is a sum over all possibilities of the action <span class="math inline">\(a\)</span>, the next state <span class="math inline">\(s'\)</span>, and the reward <span class="math inline">\(r\)</span>. For each triple <span class="math inline">\((a,s',r)\)</span>, we calculate the value by summing the reward <span class="math inline">\(\color{blue}{r}\)</span> and the discounted value of the next state <span class="math inline">\(\color{blue}{\gamma v_{\pi}(s')}\)</span>. We weight each of those values by its probability of occurring <span class="math inline">\(\color{orange}{\pi (a \vert s)}\color{purple}{p(s', r \vert s, a)}\)</span> (where <span class="math inline">\(\color{orange}{\pi (a \vert s)}\)</span> is the probability of taking action <span class="math inline">\(a\)</span> when following policy <span class="math inline">\(\pi\)</span>, and <span class="math inline">\(\color{purple}{p(s', r \vert s, a)}\)</span> is the probability of reaching the next state <span class="math inline">\(s'\)</span> and getting reward <span class="math inline">\(r\)</span> given the current state <span class="math inline">\(s\)</span> and action <span class="math inline">\(a\)</span>) and sum over all weighted values to get the expected value of state <span class="math inline">\(s\)</span>. Put simply, the value of state <span class="math inline">\(s\)</span> is equal to the expected reward plus the discounted value of the expected next state.</p>
+<p>The <strong>optimal state-value function</strong> <span class="math inline">\(v_*\)</span> is the state-value function with the highest value across all policies (or in other words, the largest expected return achievable by any policy):</p>
+<p><span class="math display">\[v_*(s) = \max_{\pi} v_{\pi}(s), \forall s \in \mathcal{S}\]</span></p>
+<p>Since <span class="math inline">\(v_*\)</span> is shared by all optimal policies <span class="math inline">\(\pi_*\)</span>, it can be expressed without referencing any specific policy:</p>
+<p><span class="math display">\[v_*(s) = \color{brown}{\max_a} \color{black}{\sum_{s',r}} \color{purple}{p(s', r \vert s, a)} \color{blue}{\left[ r + \gamma v_*(s') \right]}\]</span></p>
+<p>This is called the <strong>Bellman optimality equation</strong> and expresses the simple fact that, when following an optimal policy, the value of a state must equal the expected return for the best action from that state. Let’s go over the math in detail again. To calculate the optimal value of the state <span class="math inline">\(s\)</span> we look at every action <span class="math inline">\(a\)</span> that is available in that state. For each of these actions we look at all possibilities for <span class="math inline">\(s'\)</span> and <span class="math inline">\(r\)</span>, compute their value by adding <span class="math inline">\(\color{blue}{r}\)</span> and the discounted <em>optimal</em> value of the next state <span class="math inline">\(\color{blue}{\gamma v_*(s')}\)</span>, and weight by their probability of occurring <span class="math inline">\(\color{purple}{p(s', r \vert s, a)}\)</span>. Finally, to get the optimal value of <span class="math inline">\(s\)</span>, we just take the <span class="math inline">\(\color{brown}{\max}\)</span> over all actions.</p>
+<p>Given <span class="math inline">\(v_*\)</span>, it is easy to determine an optimal policy. In each state <span class="math inline">\(s\)</span>, there is at least one action that obtains the maximum in the Bellman optimality equation. Any policy that only chooses between these actions (that is, assigns zero probability to all other actions) is optimal. In other words, <strong>an optimal policy is greedy with respect to the optimal value function</strong> <span class="math inline">\(v_*\)</span>.</p>
+<p>In principle, assuming we have perfect knowledge of the environment’s dynamics, we could solve the system of equations given by the Bellman optimality equation (which gives one equation for each state) to get an exact solution of the RL problem. In practice, however, we usually lack the computational power and/or memory capacity to do so (think of chess, for example), which is why in nontrivial problems we need to settle for approximations. Indeed, most RL algorithms involve estimating a value function: either the state-value function or the action-value function which is introduced in the next section.</p>
+</section>
+<section id="action-value-function" class="level3">
+<h3 class="anchored" data-anchor-id="action-value-function">Action-value function</h3>
+<p>Analogous to the state-value function <span class="math inline">\(v_{\pi}\)</span>, the action-value function <span class="math inline">\(q_{\pi}(s,a)\)</span> defines the value of taking action <span class="math inline">\(a\)</span> in state <span class="math inline">\(s\)</span> under policy <span class="math inline">\(\pi\)</span> as the <strong>expected return when starting from <span class="math inline">\(s\)</span>, taking action <span class="math inline">\(a\)</span>, and <em>thereafter</em> following policy</strong> <span class="math inline">\(\pi\)</span>:</p>
+<p><span class="math display">\[q_{\pi}(s,a) = \mathbb{E}_{\pi} \left[ G_t \middle| S_t = s, A_t = a \right] = \mathbb{E}_{\pi} \left[ \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\ \middle|\ S_t = s, A_t = a \right]\]</span></p>
+<p>While state-value functions estimate how good it is for an agent to be in a given state, action-value functions estimate how good it is to take a given action in a given state. Evidently, an agent should take the actions with the highest action-values in order to maximize his expected return.</p>
+<p>Again, we can express <span class="math inline">\(q_{\pi}(s,a)\)</span> <strong>recursively</strong>:</p>
+<p><span class="math display">\[\begin{align}
+q_{\pi}(s,a) &amp; = \mathbb{E}_{\pi} \left[ G_t \vert S_t = S, A_t = a \right]\\
+             &amp; = \mathbb{E}_{\pi} \left[ R_{t+1} + \gamma G_{t+1} \vert S_t = S, A_t = a \right]\\
+             &amp; = \sum_{s', r} \color{purple}{p(s', r \vert s, a)} \color{blue}{\left[r + \gamma v_{\pi}(s') \right]} \color{black}{,\forall s \in \mathcal{S},\ \forall a \in \mathcal{A}(s)}
+\end{align}\]</span></p>
+<p>This gives us the <strong>Bellman equation for action values</strong>: for all state-action pairs we calculate the sum of the reward <span class="math inline">\(\color{blue}{r}\)</span> and the discounted value of the next state <span class="math inline">\(\color{blue}{\gamma v_{\pi}(s')}\)</span>, and weight it by the probability <span class="math inline">\(\color{purple}{p(s',r \vert s, a)}\)</span> of reward <span class="math inline">\(r\)</span> and next state <span class="math inline">\(s'\)</span> given state <span class="math inline">\(s\)</span> and action <span class="math inline">\(a\)</span> before summing up. Note that we don’t weight over actions since we only look at one specific action.</p>
+<p>The <strong>optimal action-value function</strong> <span class="math inline">\(q_*\)</span> is the action-value function with the highest action-values across all policies:</p>
+<p><span class="math display">\[q_*(s,a) = \max_{\pi} q_{\pi}(s,a), \forall s \in \mathcal{S}, \forall a \in \mathcal{A}(s)\]</span></p>
+<p>Since <span class="math inline">\(q_*\)</span>, like <span class="math inline">\(v_*\)</span>, is shared by all optimal policies <span class="math inline">\(\pi_*\)</span>, it can be expressed without reference to any specific policy:</p>
+<p><span class="math display">\[\begin{align}
+q_*(s,a) &amp; = \mathbb{E} \left[R_{t+1} + \gamma \max_{a'} q_*(S_{t+1}, a')\ \middle|\ S_t = s, A_t = a \right]\\
+         &amp; = \sum_{s',r} \color{purple}{p(s',r \vert s, a)} \color{darkgreen}{\left[ r + \gamma \max_{a'} q_*(s',a') \right]}
+\end{align}\]</span></p>
+<p>This is the <strong>Bellman optimality equation for</strong> <span class="math inline">\(q_*\)</span>. To compute the optimal value of taking action <span class="math inline">\(a\)</span> in state <span class="math inline">\(s\)</span>, we look at all possible pairs of the next state <span class="math inline">\(s'\)</span> and reward <span class="math inline">\(r\)</span>, compute their values by summing the reward <span class="math inline">\(\color{darkgreen}{r}\)</span> and the discounted optimal value of the best action in the next state <span class="math inline">\(s'\)</span> <span class="math inline">\(\color{darkgreen}{\gamma \max_{a'} q_*(s',a')}\)</span>, weight by their respective probability <span class="math inline">\(\color{purple}{p(s',r \vert s, a)}\)</span>, and sum them up.</p>
+<p>Given <span class="math inline">\(q_*\)</span>, it is even easier to determine an optimal policy. We don’t need to look ahead to possible next states, simply choosing any action that maximizes <span class="math inline">\(q_*(s,a)\)</span> suffices.</p>
+<p>It should be clear now why values (state-values and action-values) are essential for making and evaluating decisions, and why trying to efficiently estimate them plays an important role in most RL algorithms.</p>
+</section>
+<section id="the-rl-cycle" class="level3">
+<h3 class="anchored" data-anchor-id="the-rl-cycle">The RL Cycle</h3>
+<p>Let’s summarize the interaction between the agent and the environment:</p>
+<ol type="1">
+<li>The agent observes the environment. If he gets a perfect representation of the environment, he knows the state <span class="math inline">\(s\)</span> of the environment. If he receives only a partial representation, he has an observation <span class="math inline">\(o\)</span> which depends on the true state <span class="math inline">\(s\)</span>.</li>
+<li>Based on the state or observation, the agent takes a specific action <span class="math inline">\(a\)</span> as determined by his policy <span class="math inline">\(\pi\)</span>. Ideally he chooses his action so that he maximizes the expected return <span class="math inline">\(G\)</span>.</li>
+<li>In response to the action of the agent the environment transitions from the old state <span class="math inline">\(s\)</span> to a new state <span class="math inline">\(s'\)</span> (which can be equal to the old state) and provides a reward <span class="math inline">\(r\)</span> to the agent. The set of the state, the action, the reward, and the new state is called an <strong>experience</strong>.</li>
+<li>The agent tries to learn from this experience to make better decisions in the future.</li>
+</ol>
+<p>Typically, these interactions go on for several (possibly infinitely many) time steps, resulting in a so-called <strong>trajectory</strong> <span class="math inline">\(S_0, A_0, R_1, S_1, A_1, R_2, S_2, A_2, R_3, \dots\)</span>.</p>
+</section>
+<section id="conclusion-rl-and-mdps" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion-rl-and-mdps">Conclusion: RL and MDPs</h3>
+<p>The MDP framework essentially reduces the RL problem of goal-directed learning from interaction to three signals which are passed from the agent to the environment or vice versa: the actions which represent the agent’s decisions, the states which inform the agent’s decision making, and the rewards which define the agent’s goal. While this is surely idealized, it allows us to model a broad range of sequential decision making problems and even proves to be useful in cases where the formal assumptions of the framework are not exactly met.</p>
+</section>
+</section>
+<section id="key-challenges-in-rl" class="level2">
+<h2 class="anchored" data-anchor-id="key-challenges-in-rl">Key Challenges in RL</h2>
+<p>Now that we have introduced the MDP framework, we can look ahead at the major challenges we face when tackling RL problems:</p>
+<ul>
+<li><strong>Evaluative feedback</strong>: Instead of instructive feedback which provides the correct action to take (think of supervised learning), an RL agent gets evaluative feedback by the environment. That is, the feedback signal only indicates the goodness but not the correctness of an action. To reach his goal, an agent has to learn good behavior by <em>exploring</em> the realm of possible actions, while also <em>exploiting</em> his current knowledge by taking the best action he is aware of. This gives rise to the <strong>exploitation vs.&nbsp;exploration trade-off</strong> which we’ll discuss in more depth in the next post.</li>
+<li><strong>Delayed feedback</strong>: Rewards for actions may manifest only several time steps after the corresponding action was chosen by the agent. Thus, an agent has to correctly assign credit to actions even though they have delayed consequences. This is called the <strong>temporal credit assignment problem</strong>.</li>
+<li><strong>Sampled feedback</strong>: In stochastic tasks the reward provided by the environment is merely a sample. When the agent doesn’t have perfect knowledge of the MDP’s dynamics, he needs to find a way to get a reliable estimate of the reward he is going to receive.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
