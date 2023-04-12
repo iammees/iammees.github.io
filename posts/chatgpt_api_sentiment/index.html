@@ -475,7 +475,7 @@ end token: [13]</code></pre>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> biases</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Let’s try a bias value of <code>10</code> for each token ID. This is of course just a guess; another setting may work better. To ensure that the model always picks the token with the highest logit, we’ll set the <code>temperature</code> to <code>0.0</code>.</p>
+<p>Let’s try a bias value of <code>10</code> for each token ID. To ensure that the model always picks the token with the highest logit, we’ll set the <code>temperature</code> to <code>0.0</code>.</p>
 <p>Finally, we can use the <code>max_tokens</code> parameter as well as the <code>stop</code> parameter to further constrain the model:</p>
 <ul>
 <li>We set <code>max_tokens</code> to <code>3</code> meaning that ChatGPT will never reply with more tokens.</li>
