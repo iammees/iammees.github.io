@@ -2,42 +2,50 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://iammees.github.io/posts/tackling_tabular_02/index.html</loc>
-    <lastmod>2023-04-12T09:35:16.283Z</lastmod>
+    <lastmod>2023-04-12T09:37:44.916Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iammees.github.io/posts/tackling_tabular_03/index.html</loc>
+    <lastmod>2023-04-12T09:37:46.286Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iammees.github.io/posts/tackling_tabular_04/index.html</loc>
+    <lastmod>2023-04-12T09:37:47.662Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/conformal_mapie/index.html</loc>
-    <lastmod>2023-04-12T09:35:17.305Z</lastmod>
+    <lastmod>2023-04-12T09:37:48.634Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/tackling_tabular_01/index.html</loc>
-    <lastmod>2023-04-12T09:35:18.704Z</lastmod>
+    <lastmod>2023-04-12T09:37:50.127Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_intro/index.html</loc>
-    <lastmod>2023-04-12T09:35:19.367Z</lastmod>
+    <lastmod>2023-04-12T09:37:50.782Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/covid19_mortality/index.html</loc>
-    <lastmod>2023-04-12T09:35:21.900Z</lastmod>
+    <lastmod>2023-04-12T09:37:53.271Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_sentiment/index.html</loc>
-    <lastmod>2023-04-12T09:35:22.695Z</lastmod>
+    <lastmod>2023-04-12T09:37:54.065Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/image_classification_keras/index.html</loc>
-    <lastmod>2023-04-12T09:35:23.595Z</lastmod>
+    <lastmod>2023-04-12T09:37:54.981Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/semantic_search/index.html</loc>
-    <lastmod>2023-04-12T09:35:24.984Z</lastmod>
+    <lastmod>2023-04-12T09:37:56.281Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/token_classification/index.html</loc>
-    <lastmod>2023-04-12T09:35:26.110Z</lastmod>
+    <lastmod>2023-04-12T09:37:57.326Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/index.html</loc>
-    <lastmod>2023-04-12T09:35:26.904Z</lastmod>
+    <lastmod>2023-04-12T09:37:58.125Z</lastmod>
   </url>
 </urlset>

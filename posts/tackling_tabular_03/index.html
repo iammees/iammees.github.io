@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-11-10">
+
+<title>iammees - Tackling Tabular Problems III: Feature Engineering &amp; Selection</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Tackling Tabular Problems III: Feature Engineering &amp; Selection</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">November 10, 2022</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<section id="feature-engineering" class="level2">
+<h2 class="anchored" data-anchor-id="feature-engineering">Feature Engineering</h2>
+<p>In tabular problems, feature engineering can have a huge impact, potentially separating mediocre models from fantastic models. In essence, engineering features can serve three purposes: - Increase the predictive performance and generalization of a model - Increase the interpretability of a model - Reduce the complexity of a model (memory footprint, computational requirements)</p>
+<p>How can we come up with a great set of features? Successful feature engineering begins with a thorough understanding of the business problem that we want to solve (e.g., if the data concerns human decisions, imagine the decision process and think about each step and how they interact; what would have influenced you in your decision?) and the data we have (we already covered this in the section about EDA; what can the features tell us about the target?). Then we should ask how we can transform our data in representations that can be better exploited by our model. This is a highly creative endeavor and should be treated as such. Which features would help you if you had to make a prediction? Which features could help the model detect patterns in the data? Hold brainstorming sessions and try to get inspirations from solutions that worked well in similar problems. Also, error analysis really is very important. Sorting the observations by error and plotting the residuals for different groups in the data are common strategies for revealing relevant patterns that can lead to new ideas and directions for feature engineering.</p>
+<p>In general, the best features will be problem-specific and therefore hard to systematize. Nonetheless, we can look at some general feature engineering techniques that can help in many problems. Depending on the problem domain (e.g., biology, finance) there may be many other common techniques.</p>
+<section id="column-based-features" class="level3">
+<h3 class="anchored" data-anchor-id="column-based-features">Column-based features</h3>
+<section id="numerical-features" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-features">Numerical features</h4>
+<ul>
+<li><strong>Treating missing values</strong>:
+<ul>
+<li>Fill in the correct value: In some cases, we may know the correct value. For instance, if <code>NaN</code> sales simply means an absence of any transactions, we can replace missing values with <code>0</code>s. Note that there are cases where <code>NaN</code> actually is the correct value (e.g., the age of the spouse for singles).</li>
+<li>Keep the missing values: Assuming that we use a model that can handle <code>NaN</code>s natively (like XGBoost and its relatives), this is generally the best approach. Keeping missing values allows the model to capture information that is contained in the missingness (e.g., in a dataset for tax fraud detection, missingness may not occur at random but rather tell us a lot about the target). Alternatively, try replacing <code>NaN</code>s with a value that is far from the other values (e.g., <code>-999</code>; depending on the implementation, this can result in slightly different splits).</li>
+<li>Add a binary column: It can help to add a binary column that indicates whether a value is/was missing.</li>
+<li>Imputation: Since we want to preserve the data properties and don’t want to break our model (linear models can be quite sensitive in this regard), good imputation is very challenging. While there are many possible techniques (just see the scikit-learn <a href="https://scikit-learn.org/stable/modules/impute.html">user guide</a>), it is quite common to fill in the mean or median. (Needless to say, the imputation value should only be derived from the training data.) However, filling in a constant value can often cause problems (e.g., when there are groups in the data). If domain knowledge doesn’t come to the rescue, it is best to just use a model that handles missingness natively.</li>
+</ul></li>
+<li><strong>Treating outliers</strong>: Outliers are usually detrimental to the performance of a model. Thus, it is important to identify and treat them if necessary.
+<ul>
+<li>Identify outliers: There is no general method to identify outliers. If domain knowledge doesn’t help, common techniques are based on the standard deviation (e.g., values that fall outside of 3 standard deviations from the mean) or interquartile range (e.g., values that fall outside of <code>1.5 * IQR</code>). For more sophisticated approaches see the scikit-learn <a href="https://scikit-learn.org/stable/modules/outlier_detection.html">guide</a>.</li>
+<li>Treat outliers: The best treatment of outliers ultimately depends on the problem. While we may want to keep outliers in some settings (e.g., in anomaly detection), we’ll want to cap, modify or remove them in others. It can also be useful to add a binary column indicating known outliers.</li>
+</ul></li>
+<li><strong>Binning</strong>: There are three typical motives for binning: reducing the memory footprint of a feature, removing noise and errors, and making it easier to model non-linear relationships between a feature and the target. Common methods for binning are <code>pandas</code>’ <code>cut</code> and scikit-learn’s <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html"><code>KBinsDiscretizer</code></a>. Binning can be combined with/used for frequency encoding.</li>
+<li><strong>Rounding</strong>: This is another form of lossy compression. Can be useful when high degrees of precision translate to noise.</li>
+<li><strong>Splitting</strong>: Split a value into its integer and decimal part. Can be useful in certain use cases (e.g., prices).</li>
+<li><strong>Ranking</strong>: Rank the observations by a feature column (e.g., using the <code>rank()</code> method in <code>pandas</code>) and use the ranks as a feature.</li>
+<li><strong>Transforming</strong>: Transforming numerical variables can be useful to increase the performance and/or the interpretability of a model. (Note: Tree-based models generally don’t benefit from feature scaling. However, it can sometimes help to transform the target in order to better optimize for some objective function.)
+<ul>
+<li>Logarithmic transformation: Taking the (natural) logarithm is often seen in practice and can have multiple benefits.
+<ul>
+<li>The log transformation can reduce skewness and improve the fit of the model. In practice, the log transform is often used as a default preprocessing technique when a variable is heavy-tailed.</li>
+<li>The log transformation can increase the interpretability of a coefficient.</li>
+<li>A linear model on the logarithmic scale corresponds to a multiplicative model on the original scale.</li>
+<li>Log transforming outcomes that are all positive forces the predictions to be positive.</li>
+</ul></li>
+<li>Square root transformation: Taking the square root of a variable is an alternative to the logarithmic transformation that compresses high values more mildly. It doesn’t come with the interpretability benefits of the log transform, however.</li>
+<li>Standardization:
+<ul>
+<li>using <span class="math inline">\(z\)</span>-scores: Subtract the mean and divide by the standard deviation. This is the default preprocessing approach for neural networks (which generally require and are quite sensitive to feature scaling). Implemented in <code>scikit-learn</code>’s <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html"><code>StandardScaler</code></a>.</li>
+<li>using a reasonable scale: To increase interpretability, it can sometimes help to rescale variables (e.g., divide income by 10,000).</li>
+</ul></li>
+<li>Normalization: Subtract the minimum value and divide by the range. Implemented in scikit-learn’s <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html"><code>MinMaxScaler</code></a>; an alternative to standardization for neural networks.</li>
+<li>Centering: Centering a variable (by subtracting the mean or another reference value) can improve interpretability.</li>
+<li>Other: Other common scalers are scikit-learn’s <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html#sklearn.preprocessing.RobustScaler"><code>RobustScaler</code></a> which is less sensitive to outliers, as well as <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html#sklearn.preprocessing.PowerTransformer"><code>PowerTransformer</code></a> and <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html"><code>QuantileTransformer</code></a> (which is probably a good choice when preprocessing tabular data for neural networks) which can be used to make data more Gaussian-like. See <a href="https://scikit-learn.org/stable/auto_examples/preprocessing/plot_all_scaling.html">here</a> for a comparison of different scaling methods.</li>
+<li>Idiosyncratic transformations: Depending on the problem, there may be custom transformations that are useful.</li>
+</ul></li>
+<li><strong>Dimensionality reduction</strong>: Run PCA/t-SNE/UMAP on the data and use the outputs as features.</li>
+<li><strong>Polynomial features</strong>: Raise features to an exponent.</li>
+<li><strong>Aggregations/Group statistics</strong>: If there are groups in the data (e.g., age groups, areas, dates, departments, clusters derived by cluster analysis), compute features for each group (e.g., mean, median, standard deviation, minimum, maximum, sum, skewness, kurtosis, etc.). This can help the model pick up differences between groups. Try combining multiple groups before computing group statistics.</li>
+<li><strong>Interactions</strong>: Add, subtract, multiply or divide two features. These features are often very important (while two features may not correlate with the target on their own, their interaction may very well provide signal).</li>
+</ul>
+</section>
+<section id="categorical-features" class="level4">
+<h4 class="anchored" data-anchor-id="categorical-features">Categorical features</h4>
+<ul>
+<li><strong>Treating missing values</strong>:
+<ul>
+<li>Fill in the correct value: Determine the correct value using domain knowledge.</li>
+<li>Keep the missing values: Use a model that can handle missing values natively. Again, this is probably the best approach.</li>
+<li>Create a new category: Create a new category that represents missing values. Instead of <code>NaN</code> we can use a value that is markedly different from the other values (e.g., a large negative value like <code>-999</code>).</li>
+<li>Fill in the mode (or another category): Like with numerical variables, this is usually not the best idea. Use a model that can handle missing values instead.</li>
+</ul></li>
+<li><strong>Splitting into multiple categories</strong>: Depending on the dataset, there may be features that can be derived from splitting a categorical variable. Below are some common ones.
+<ul>
+<li>Dates/Timestamps: Many features can be derived directly from dates and timestamps (e.g., year, month, day, week of year, quarter, etc.).</li>
+<li>Addresses: Addresses can be split into state, city, district, etc.</li>
+<li>User agent: Many features can be derived from user agent strings (used in HTTP): <code>is_mobile</code>, <code>is_latest_version</code>, <code>operating_system</code>, etc.</li>
+</ul></li>
+<li><strong>Combining multiple categories in one</strong>: Sometimes merging two categorical features into one can help the model (e.g., slightly different job descriptions, very rare categories).</li>
+<li><strong>Encoding</strong>:
+<ul>
+<li>Label encoding: Convert each category to a unique integer label (e.g., using scikit-learn’s <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OrdinalEncoder.html"><code>OrdinalEncoder</code></a> or <code>pandas</code>’ <code>factorize()</code> method). This is the default approach for tree-based models and usually works surprisingly well. An option for neural networks.</li>
+<li>One-hot encoding: Create a binary column for each category (e.g., using scikit-learn’s <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html"><code>OneHotEncoder</code></a>. This is the default approach for linear models (where one category is usually used as a baseline). An option for neural networks.</li>
+<li>Frequency encoding: Replace each category with its frequency in the training data (e.g., by using <code>pandas</code>’ <code>value_counts()</code> as a dictionary). Alternatively, try converting to ranks.</li>
+<li>Target encoding: Replace each category with the corresponding target probability (in classification) or average (in regression). Can be the best encoding technique, but comes with a higher risk of overfitting (it can help to add some noise to combat this). See <a href="https://contrib.scikit-learn.org/category_encoders/targetencoder.html">here</a> for an implementation.</li>
+<li>Embeddings: Create vector embeddings that represent categorical data. Primarily useful for neural networks.</li>
+</ul></li>
+</ul>
+</section>
+<section id="features-created-by-a-model" class="level4">
+<h4 class="anchored" data-anchor-id="features-created-by-a-model">Features created by a model</h4>
+<p>Quite often we find that there is a feature that would provide a lot of signal to the model but isn’t available in the dataset. In situations like this, it may be possible to create a model that leverages the existing data and can predict the feature in question accurately enough. An example: Imagine that we want to create a model that predicts the number of clicks generated by ads for used cars. Common sense tells us that the number of clicks will depend on how the price offered in the ad compares to the typical market price of the product. Maybe we can create a model that predicts the price of the car and use the price difference as a feature?</p>
+</section>
+</section>
+<section id="row-based-features" class="level3">
+<h3 class="anchored" data-anchor-id="row-based-features">Row-based features</h3>
+<p>While column-based features are probably more intuitive, it can also be beneficial to compute row-wise features to help the model find patterns in the data. Some examples are: - Compute the mean, median, standard deviation, minimum, maximum, sum, etc. of the numeric values (or a reasonable subset). - Compute an average score of how much the column values deviate from their mean or median. - Count missing values, 0s, positive/negative values, etc. - Clustering: Cluster the data (e.g., using an unsupervised algorithm like <a href="https://docs.rapids.ai/api/cuml/stable/api.html#k-means-clustering">K-Means</a>) and add the cluster labels as a feature.</p>
+</section>
+</section>
+<section id="feature-selection" class="level2">
+<h2 class="anchored" data-anchor-id="feature-selection">Feature selection</h2>
+<p>Even though we hope that every newly created feature provides important information to the model, this is usually not the case. Instead we’ll often end up with many features that are not really relevant for the problem or even just introduce noise. Thus, feature selection (i.e., reducing the size of the feature set) may be necessary for several reasons: - <strong>Increase predictive performance</strong>: The impact of uninformative features on a model’s predictions generally depends on the model type. While neural networks are typically very sensitive to irrelevant features, tree-based models should be able to simply ignore them. In practice though, their performance usually suffers at least to some degree too. Thus, dropping features is often a way to get better predictions. - <strong>Easier data collection</strong>: Depending on the problem setting, good features that can be easily collected can be better than great features that are expensive to acquire. This may actually be quite important in practice. - <strong>Reduce computation/memory requirements</strong>: Reduce the size of the feature set in order to consume less memory and/or speed up training and inference. - <strong>Increase interpretability</strong>: There is a trade-off between predictive performance and model interpretability. If interpretability matters it may be our goal to find a set of interpretable features with reasonable predictive performance.</p>
+<p>So how should we select our features? In theory, the best approach to feature selection is simple: just try out all combinations and pick the feature set that fits the requirements best. In practice, this is of course computationally infeasible. Thus, many feature selection methods have been proposed. They generally fall into three main classes: - <strong>Intrinsic/Embedded methods</strong>: Intrinsic feature selection happens implicitly when the model is fitted. Thus, they don’t require any additional tools and build on a direct link between the objective function and feature selection. A common example are regularization models like lasso regression that force some predictors to be excluded from the model. Implicit feature selection also happens in tree-based models where predictors that are not used in any split are excluded from the model. - <strong>Filter methods</strong>: Filter methods select features based on their properties (i.e., they don’t involve a model). For instance, common criteria are based on correlation with the target, <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.mutual_info_regression.html#sklearn.feature_selection.mutual_info_regression">mutual information</a> or <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold">variance thresholds</a>. The advantage of filter methods is that they are simple, fast and easily understandable. - <strong>Wrapper methods</strong>: Wrapper methods iteratively fit a model to a feature subset and use the resulting model performance to select the subset for the next iteration. They have the best chance of finding the most predictive features, but are computationally demanding (and in some cases simply infeasible). Common wrapper methods are: - <a href="https://scikit-learn.org/stable/modules/feature_selection.html#rfe">Recursive feature elimination</a> (RFE): Create an initial model using all available features. Eliminate the least important features (e.g., features with the smallest coefficients when using a linear model). Fit the model on the reduced set of features. Repeat until the desired number of features has been reached. - <a href="https://scikit-learn.org/stable/modules/feature_selection.html#sequential-feature-selection">Sequential feature selection</a> (SFS): - Sequential forward selection: Begin with zero features. Fit a model for each available feature. Keep the feature that resulted in the best model performance. Repeat until the desired number of features has been reached. - Sequential backward selection: Begin with all <span class="math inline">\(n\)</span> available features. Fit a model to all subsets of size <span class="math inline">\(n-1\)</span>. Keep the feature that is associated with highest drop in performance. Repeat until the desired number of features has been reached. - <a href="(http://www.feat.engineering/genetic-algorithms.html)">Genetic algorithms</a>: Genetic algorithms can be used effectively for feature selection. - <a href="https://scikit-learn.org/stable/modules/permutation_importance.html">Permutation importance</a>: Fit a model to all features. Then, for each feature, shuffle the feature column and score the predictions of the model. The higher the drop in performance, the more important is the feature. Rank the features by their permutation importance and select the desired number of features. - <a href="https://github.com/slundberg/shap">SHAP</a>: SHAP is a model-agnostic method for explaining individual predictions that has its roots in Shapley values from cooperative game theory. (See <a href="https://h2o.ai/blog/shapley-values-a-gentle-introduction/">here</a> and <a href="https://christophm.github.io/interpretable-ml-book/shap.html">here</a> for more on SHAP.) A great method for interpretable ML, it can be used effectively for computing feature importances (and thus feature selection) as well. For each feature we simply average the absolute values across the data to obtain <a href="https://christophm.github.io/interpretable-ml-book/shap.html#shap-feature-importance">global feature importances</a> or we analyze a <a href="https://christophm.github.io/interpretable-ml-book/shap.html#shap-summary-plot">summary plot</a> that visualizes the feature importances and effects for all instances. Note that SHAP values can be computed using GPU acceleration from inside XGBoost (just set <code>pred_contribs=True</code> when using <code>model.predict()</code>) which provides massive speed-ups. It is therefore easy to compute SHAP values as a default in a modeling pipeline. (Of course, we shouldn’t trust feature importance scores blindly because they can reflect bias in the data. In this case, it can be necessary to remove “important” features!)</p>
+<p>Which of these methods is best suited for a given problem depends on many factors (number of features, resource constraints, etc.). However, note that the methods outlined above generally imply that feature selection is a separate step that comes after feature engineering. In practice, this may not be ideal. At least in situations when we don’t want to create large numbers of features automatically, we can proceed with feature engineering and feature selection in parallel. That is, we immediately try a newly created feature and keep it if the model improves in cross-validation. (In order to know whether the improvement is large enough, we should check the variation of the validation score between folds and/or seeds. The improvement should exceed this variation. Also, keep an eye on the train and the CV score. Adding a new feature shouldn’t widen the gap between both scores significantly; otherwise we are probably overfitting.) This approach can make feature engineering more natural (even more so if combined with analyzing SHAP values), allowing us to find suitable directions for improvement and understand the problem more thoroughly.</p>
+</section>
+<section id="example-rocket-league" class="level2">
+<h2 class="anchored" data-anchor-id="example-rocket-league">Example: Rocket League</h2>
+<p>Let’s turn our attention to the Rocket League example. Instead of creating a large number of features and applying feature selection afterwards, we’ll stick to the iterative approach and try to engineer useful features based on an intuitive understanding of the data. In order to make the most out of GPU acceleration, we’ll use <code>cudf</code> and <code>cupy</code> for feature engineering, and <code>xgboost</code> for modeling and the computation of Shap values.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:33:27.501077Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:33:27.500671Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:33:27.508529Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:33:27.507426Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:33:27.501044Z&quot;}" data-trusted="true" data-execution_count="13">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cudf</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cupy</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> xgboost <span class="im">as</span> xgb</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> shap</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> GroupKFold</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> log_loss</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:28:21.540546Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:28:21.539518Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:28:21.546721Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:28:21.544863Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:28:21.540487Z&quot;}" data-trusted="true" data-execution_count="2">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data_path <span class="op">=</span> Path(<span class="st">"/kaggle/input/rocket-league"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:29:12.466014Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:29:12.465300Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:29:14.849383Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:29:14.848355Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:29:12.465974Z&quot;}" data-trusted="true" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> pd.read_feather(data_path<span class="op">/</span><span class="st">"train.feather"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>test_df <span class="op">=</span> pd.read_feather(data_path<span class="op">/</span><span class="st">"test.feather"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> cudf.from_pandas(train_df)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>test_df <span class="op">=</span> cudf.from_pandas(test_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:43:59.502274Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:43:59.501580Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:43:59.507892Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:43:59.506737Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:43:59.502236Z&quot;}" data-trusted="true" data-execution_count="20">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="st">"team_A_scoring_within_10sec"</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>original_features <span class="op">=</span> [col <span class="cf">for</span> col <span class="kw">in</span> train_df <span class="cf">if</span> col <span class="kw">not</span> <span class="kw">in</span> [<span class="st">"game_num"</span>, <span class="st">"event_id"</span>, target]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:33:29.906289Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:33:29.905357Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:33:29.911958Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:33:29.910544Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:33:29.906235Z&quot;}" data-trusted="true" data-execution_count="14">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>xgb_params <span class="op">=</span> { </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"learning_rate"</span>: <span class="fl">0.01</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"eval_metric"</span>:<span class="st">"logloss"</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"objective"</span>:<span class="st">"binary:logistic"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tree_method"</span>:<span class="st">"gpu_hist"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"predictor"</span>:<span class="st">"gpu_predictor"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"random_state"</span>:<span class="dv">1</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:33:30.130657Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:33:30.130275Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:33:30.141739Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:33:30.140523Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:33:30.130622Z&quot;}" data-trusted="true" data-execution_count="15">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_cv(df, features, compute_shap<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    cv <span class="op">=</span> GroupKFold(n_splits<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    oof <span class="op">=</span> np.zeros(df.shape[<span class="dv">0</span>])</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> []</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> fold, (train_idx, valid_idx) <span class="kw">in</span> <span class="bu">enumerate</span>(cv.split(df, groups<span class="op">=</span>df.game_num.to_numpy())):        </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        dtrain <span class="op">=</span> xgb.DMatrix(data<span class="op">=</span>df.iloc[train_idx][features], label<span class="op">=</span>df.iloc[train_idx][target])</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        dvalid <span class="op">=</span> xgb.DMatrix(data<span class="op">=</span>df.iloc[valid_idx][features], label<span class="op">=</span>df.iloc[valid_idx][target])</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> xgb.train(xgb_params,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                          dtrain<span class="op">=</span>dtrain,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                          evals<span class="op">=</span>[(dtrain, <span class="st">"train"</span>), (dvalid, <span class="st">"valid"</span>)],</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                          num_boost_round<span class="op">=</span><span class="dv">1000</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>                          verbose_eval<span class="op">=</span><span class="dv">1000</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> compute_shap <span class="kw">and</span> fold <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>            shap_values <span class="op">=</span> model.predict(dvalid, pred_contribs<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        oof_preds <span class="op">=</span> model.predict(dvalid)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        oof[valid_idx] <span class="op">=</span> oof_preds</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        score <span class="op">=</span> log_loss(df.iloc[valid_idx][target].to_numpy(), oof_preds)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Fold </span><span class="sc">{</span>fold<span class="sc">}</span><span class="ss"> score: </span><span class="sc">{</span>score<span class="sc">:.5f}</span><span class="ss">"</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        scores.append(score)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        <span class="kw">del</span> dtrain, dvalid, model, oof_preds, score</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        gc.collect()</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"CV score: </span><span class="sc">{</span>np<span class="sc">.</span>mean(scores)<span class="sc">:.5f}</span><span class="ss">"</span>)</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> shap_values</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Let’s begin by creating a baseline XGBoost model using all original features.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:37:59.847865Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:37:59.847366Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:42:06.084532Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:42:06.083385Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:37:59.847816Z&quot;}" data-trusted="true" data-execution_count="17">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>shap_values <span class="op">=</span> run_cv(train_df, original_features)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0] train-logloss:0.68522   valid-logloss:0.68526
+[999]   train-logloss:0.18825   valid-logloss:0.19905
+Fold 0 score: 0.19905
+[0] train-logloss:0.68523   valid-logloss:0.68524
+[999]   train-logloss:0.18886   valid-logloss:0.19658
+Fold 1 score: 0.19658
+[0] train-logloss:0.68524   valid-logloss:0.68522
+[999]   train-logloss:0.18973   valid-logloss:0.19331
+Fold 2 score: 0.19331
+[0] train-logloss:0.68524   valid-logloss:0.68522
+[999]   train-logloss:0.18995   valid-logloss:0.19237
+Fold 3 score: 0.19237
+[0] train-logloss:0.68524   valid-logloss:0.68523
+[999]   train-logloss:0.18977   valid-logloss:0.19301
+Fold 4 score: 0.19301
+CV score: 0.19486</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:44:10.119270Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:44:10.118570Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:44:11.313667Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:44:11.312501Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:44:10.119233Z&quot;}" data-trusted="true" data-execution_count="21">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>shap.summary_plot(shap_values[:, :<span class="op">-</span><span class="dv">1</span>], original_features, plot_type<span class="op">=</span><span class="st">"bar"</span>, max_display<span class="op">=</span><span class="dv">70</span>, plot_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-9-output-1.png" class="quarto-discovered-preview-image img-fluid"></p>
+</div>
+</div>
+<p>Looking at the Shap values we notice two things: - The position of the ball, the direction of movement of the ball and the players, and the boost that is available to the players are the most important features. This makes intuitive sense. - At least without further feature engineering, the <code>x</code> and <code>z</code> position of the players, the players’ <code>x</code> velocity, and the boost timer features are not really useful for the model.</p>
+<p>Let’s see how the model performs when we drop the least important features.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:46:14.848445Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:46:14.848013Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:46:14.865000Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:46:14.863834Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:46:14.848407Z&quot;}" data-trusted="true" data-execution_count="23">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>original_features <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> original_features <span class="cf">if</span> f <span class="kw">not</span> <span class="kw">in</span> <span class="bu">list</span>(<span class="bu">filter</span>(re.<span class="bu">compile</span>(<span class="st">"p[0-5]_pos_x"</span>).match, original_features))]</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>original_features <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> original_features <span class="cf">if</span> f <span class="kw">not</span> <span class="kw">in</span> <span class="bu">list</span>(<span class="bu">filter</span>(re.<span class="bu">compile</span>(<span class="st">"p[0-5]_pos_z"</span>).match, original_features))]</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>original_features <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> original_features <span class="cf">if</span> f <span class="kw">not</span> <span class="kw">in</span> <span class="bu">list</span>(<span class="bu">filter</span>(re.<span class="bu">compile</span>(<span class="st">"p[0-5]_vel_x"</span>).match, original_features))]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>original_features <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> original_features <span class="cf">if</span> <span class="st">"timer"</span> <span class="kw">not</span> <span class="kw">in</span> f]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:46:26.335348Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:46:26.334774Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:49:06.193743Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:49:06.192611Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:46:26.335311Z&quot;}" data-trusted="true" data-execution_count="24">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>shap_values <span class="op">=</span> run_cv(train_df, original_features)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0] train-logloss:0.68522   valid-logloss:0.68526
+[999]   train-logloss:0.18868   valid-logloss:0.19893
+Fold 0 score: 0.19893
+[0] train-logloss:0.68523   valid-logloss:0.68524
+[999]   train-logloss:0.18938   valid-logloss:0.19656
+Fold 1 score: 0.19656
+[0] train-logloss:0.68524   valid-logloss:0.68522
+[999]   train-logloss:0.19023   valid-logloss:0.19323
+Fold 2 score: 0.19323
+[0] train-logloss:0.68524   valid-logloss:0.68522
+[999]   train-logloss:0.19036   valid-logloss:0.19230
+Fold 3 score: 0.19230
+[0] train-logloss:0.68524   valid-logloss:0.68523
+[999]   train-logloss:0.19029   valid-logloss:0.19292
+Fold 4 score: 0.19292
+CV score: 0.19479</code></pre>
+</div>
+</div>
+<p>As expected, the CV score doesn’t deteriorate (it actually improves slightly).</p>
+<p>Let’s move on and engineer some new features. Judging from the Shap values and our understanding of the dataset, the <code>y</code> position of the ball is a very important feature. So let’s build on this and compute the Euclidean distance of the ball to the goal of team B as well as the relative distance:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:51:17.447303Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:51:17.446798Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:51:17.459998Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:51:17.458900Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:51:17.447255Z&quot;}" data-trusted="true" data-execution_count="25">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> euclidean_dist(a, b):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cupy.linalg.norm(a <span class="op">-</span> b, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> distance_ball_goal(df):</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    ball_pos <span class="op">=</span> df[[<span class="ss">f"ball_pos_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]]]</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_ball2goalA"</span>] <span class="op">=</span> euclidean_dist(ball_pos.values, cupy.array([<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">6</span>])).astype(<span class="st">"float32"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_ball2goalB"</span>] <span class="op">=</span> euclidean_dist(ball_pos.values, cupy.array([<span class="dv">0</span>, <span class="op">-</span><span class="dv">100</span>, <span class="dv">6</span>])).astype(<span class="st">"float32"</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_ball2goal_A_rel_B"</span>] <span class="op">=</span> (df[<span class="st">"dist_ball2goalA"</span>] <span class="op">/</span> df[<span class="st">"dist_ball2goalB"</span>]).astype(<span class="st">"float32"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_features(df):</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_ball_goal(df)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:51:47.684172Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:51:47.683185Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:51:48.784697Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:51:48.783514Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:51:47.684115Z&quot;}" data-trusted="true" data-execution_count="26">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> compute_features(train_df)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>test_df <span class="op">=</span> compute_features(test_df)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>dist_ball_goal_features <span class="op">=</span> [<span class="st">"dist_ball2goalB"</span>, <span class="st">"dist_ball2goal_A_rel_B"</span>]</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>features <span class="op">=</span> original_features <span class="op">+</span> dist_ball_goal_features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:51:54.948828Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:51:54.948167Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:54:38.947765Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:54:38.946646Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:51:54.948792Z&quot;}" data-trusted="true" data-execution_count="27">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>shap_values <span class="op">=</span> run_cv(train_df, features)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0] train-logloss:0.68520   valid-logloss:0.68524
+[999]   train-logloss:0.18855   valid-logloss:0.19880
+Fold 0 score: 0.19880
+[0] train-logloss:0.68521   valid-logloss:0.68522
+[999]   train-logloss:0.18927   valid-logloss:0.19633
+Fold 1 score: 0.19633
+[0] train-logloss:0.68522   valid-logloss:0.68520
+[999]   train-logloss:0.19008   valid-logloss:0.19306
+Fold 2 score: 0.19306
+[0] train-logloss:0.68522   valid-logloss:0.68520
+[999]   train-logloss:0.19019   valid-logloss:0.19197
+Fold 3 score: 0.19197
+[0] train-logloss:0.68522   valid-logloss:0.68521
+[999]   train-logloss:0.19006   valid-logloss:0.19265
+Fold 4 score: 0.19265
+CV score: 0.19456</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T15:56:53.663311Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T15:56:53.662603Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T15:56:54.229400Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T15:56:54.228439Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T15:56:53.663274Z&quot;}" data-trusted="true" data-execution_count="28">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>shap.summary_plot(shap_values[:, :<span class="op">-</span><span class="dv">1</span>], features, plot_type<span class="op">=</span><span class="st">"bar"</span>, max_display<span class="op">=</span><span class="dv">70</span>, plot_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">8</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>The CV score has improved (a little bit) and the relative distance is now the most important feature. Apparently, distance features can be quite useful for this dataset. What next? Intuitively, the distance of the players to the ball indicates which team is in possession. Let’s compute the minimum and mean distance for both teams as well as the corresponding relative features:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:04:29.447271Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:04:29.446887Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:04:29.457535Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:04:29.456503Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:04:29.447238Z&quot;}" data-trusted="true" data-execution_count="35">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> distance_team_ball(df):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    ball_pos <span class="op">=</span> df[[<span class="ss">f"ball_pos_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]]]</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">6</span>):</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        player_pos <span class="op">=</span> df[[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_pos_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]]]</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        player_pos.fillna(<span class="op">-</span><span class="dv">10000</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2ball"</span>] <span class="op">=</span> euclidean_dist(player_pos.values, ball_pos.values).astype(<span class="st">"float32"</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2ball"</span>].loc[df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2ball"</span>] <span class="op">&gt;</span> <span class="dv">300</span>] <span class="op">=</span> np.nan</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        <span class="kw">del</span> player_pos</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        gc.collect()</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2ball_A_min"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2ball"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2ball_B_min"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2ball"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>, <span class="dv">6</span>)]].<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2ball_A_mean"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2ball"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2ball_B_mean"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2ball"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>, <span class="dv">6</span>)]].mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2ball_min_A_rel_B"</span>] <span class="op">=</span> df[<span class="st">"dist_team2ball_A_min"</span>] <span class="op">/</span> df[<span class="st">"dist_team2ball_B_min"</span>]</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2ball_mean_A_rel_B"</span>] <span class="op">=</span> df[<span class="st">"dist_team2ball_A_mean"</span>] <span class="op">/</span> df[<span class="st">"dist_team2ball_B_mean"</span>]</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_features(df):</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_ball_goal(df)</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_team_ball(df)</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:05:16.487997Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:05:16.487567Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:05:18.807872Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:05:18.806722Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:05:16.487963Z&quot;}" data-trusted="true" data-execution_count="41">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> compute_features(train_df)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>test_df <span class="op">=</span> compute_features(test_df)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>dist_team_ball_features <span class="op">=</span> [<span class="st">"dist_team2ball_A_min"</span>, <span class="st">"dist_team2ball_A_mean"</span>, <span class="st">"dist_team2ball_min_A_rel_B"</span>, <span class="st">"dist_team2ball_mean_A_rel_B"</span>]</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>features <span class="op">+=</span> dist_team_ball_features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>The as_gpu_matrix method will be removed in a future cuDF release. Consider using `to_cupy` instead.</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:05:19.819788Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:05:19.818573Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:08:09.956672Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:08:09.954831Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:05:19.819727Z&quot;}" data-trusted="true" data-execution_count="42">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>shap_values <span class="op">=</span> run_cv(train_df, features)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0] train-logloss:0.68519   valid-logloss:0.68523
+[999]   train-logloss:0.18780   valid-logloss:0.19810
+Fold 0 score: 0.19810
+[0] train-logloss:0.68520   valid-logloss:0.68521
+[999]   train-logloss:0.18856   valid-logloss:0.19529
+Fold 1 score: 0.19529
+[0] train-logloss:0.68521   valid-logloss:0.68520
+[999]   train-logloss:0.18940   valid-logloss:0.19226
+Fold 2 score: 0.19226
+[0] train-logloss:0.68521   valid-logloss:0.68520
+[999]   train-logloss:0.18953   valid-logloss:0.19123
+Fold 3 score: 0.19123
+[0] train-logloss:0.68521   valid-logloss:0.68521
+[999]   train-logloss:0.18940   valid-logloss:0.19202
+Fold 4 score: 0.19202
+CV score: 0.19378</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:10:33.909552Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:10:33.908932Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:10:34.502172Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:10:34.498963Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:10:33.909510Z&quot;}" data-trusted="true" data-execution_count="43">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>shap.summary_plot(shap_values[:, :<span class="op">-</span><span class="dv">1</span>], features, plot_type<span class="op">=</span><span class="st">"bar"</span>, max_display<span class="op">=</span><span class="dv">70</span>, plot_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">8</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-19-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Adding these features leads to a quite significant improvement of the CV score. Thus, it may be a good idea to add features that capture the distance of the teams to the goals as well.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:16:57.639801Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:16:57.639399Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:16:57.653055Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:16:57.651914Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:16:57.639766Z&quot;}" data-trusted="true" data-execution_count="47">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> distance_team_goal(df):</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">6</span>):</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>        player_pos <span class="op">=</span> df[[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_pos_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]]]</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>        player_pos.fillna(<span class="op">-</span><span class="dv">10000</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalA"</span>] <span class="op">=</span> euclidean_dist(player_pos.values, cupy.array([<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">6</span>]))</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalB"</span>] <span class="op">=</span> euclidean_dist(player_pos.values, cupy.array([<span class="dv">0</span>, <span class="op">-</span><span class="dv">100</span>, <span class="dv">6</span>]))</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>        df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalA"</span>].loc[df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalA"</span>] <span class="op">&gt;</span> <span class="dv">300</span>] <span class="op">=</span> np.nan</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>        df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalB"</span>].loc[df[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalB"</span>] <span class="op">&gt;</span> <span class="dv">300</span>] <span class="op">=</span> np.nan</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>        <span class="kw">del</span> player_pos</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>        gc.collect()</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalA_A_min"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalA"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalA_B_min"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalA"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>, <span class="dv">6</span>)]].<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalB_A_min"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalB"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalB_B_min"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalB"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>, <span class="dv">6</span>)]].<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalA_A_mean"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalA"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalA_B_mean"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalA"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>, <span class="dv">6</span>)]].mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalB_A_mean"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalB"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalB_B_mean"</span>] <span class="op">=</span> df[[<span class="ss">f"dist_p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_2goalB"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>, <span class="dv">6</span>)]].mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalA_mean_A_rel_B"</span>] <span class="op">=</span> df[<span class="st">"dist_team2goalA_A_mean"</span>] <span class="op">/</span> df[<span class="st">"dist_team2goalA_B_mean"</span>]</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"dist_team2goalB_mean_A_rel_B"</span>] <span class="op">=</span> df[<span class="st">"dist_team2goalB_A_mean"</span>] <span class="op">/</span> df[<span class="st">"dist_team2goalB_B_mean"</span>]</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_features(df):</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_ball_goal(df)</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_team_ball(df)</span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_team_goal(df)</span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:16:58.559218Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:16:58.558840Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:17:02.981982Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:17:02.980944Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:16:58.559180Z&quot;}" data-trusted="true" data-execution_count="48">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> compute_features(train_df)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>test_df <span class="op">=</span> compute_features(test_df)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>dist_team_goal_features <span class="op">=</span> [<span class="st">"dist_team2goalB_A_min"</span>, <span class="st">"dist_team2goalA_B_min"</span>, <span class="st">"dist_team2goalA_mean_A_rel_B"</span>, <span class="st">"dist_team2goalB_mean_A_rel_B"</span>]</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>features <span class="op">+=</span> dist_team_goal_features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>The as_gpu_matrix method will be removed in a future cuDF release. Consider using `to_cupy` instead.</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:17:03.922372Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:17:03.921688Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:20:08.284251Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:20:08.283081Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:17:03.922336Z&quot;}" data-trusted="true" data-execution_count="49">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>shap_values <span class="op">=</span> run_cv(train_df, features)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0] train-logloss:0.68519   valid-logloss:0.68522
+[999]   train-logloss:0.18732   valid-logloss:0.19742
+Fold 0 score: 0.19742
+[0] train-logloss:0.68520   valid-logloss:0.68521
+[999]   train-logloss:0.18806   valid-logloss:0.19480
+Fold 1 score: 0.19480
+[0] train-logloss:0.68520   valid-logloss:0.68519
+[999]   train-logloss:0.18888   valid-logloss:0.19158
+Fold 2 score: 0.19158
+[0] train-logloss:0.68521   valid-logloss:0.68519
+[999]   train-logloss:0.18903   valid-logloss:0.19080
+Fold 3 score: 0.19080
+[0] train-logloss:0.68521   valid-logloss:0.68520
+[999]   train-logloss:0.18898   valid-logloss:0.19146
+Fold 4 score: 0.19146
+CV score: 0.19321</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:21:36.127593Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:21:36.127179Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:21:36.738441Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:21:36.737446Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:21:36.127557Z&quot;}" data-trusted="true" data-execution_count="50">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>shap.summary_plot(shap_values[:, :<span class="op">-</span><span class="dv">1</span>], features, plot_type<span class="op">=</span><span class="st">"bar"</span>, max_display<span class="op">=</span><span class="dv">70</span>, plot_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">8</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-23-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>This gives an improved CV score again. Given that we engineered many features based on the position of the players, can we now safely drop the players’ <code>y</code> positions?</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:21:48.509656Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:21:48.509165Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:21:48.515697Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:21:48.514503Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:21:48.509611Z&quot;}" data-trusted="true" data-execution_count="51">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>features <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> features <span class="cf">if</span> f <span class="kw">not</span> <span class="kw">in</span> <span class="bu">list</span>(<span class="bu">filter</span>(re.<span class="bu">compile</span>(<span class="st">"p[0-5]_pos_y"</span>).match, features))]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:22:00.900375Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:22:00.899780Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:24:39.033271Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:24:39.031452Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:22:00.900335Z&quot;}" data-trusted="true" data-execution_count="52">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>shap_values <span class="op">=</span> run_cv(train_df, features)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0] train-logloss:0.68519   valid-logloss:0.68522
+[999]   train-logloss:0.18747   valid-logloss:0.19738
+Fold 0 score: 0.19738
+[0] train-logloss:0.68520   valid-logloss:0.68521
+[999]   train-logloss:0.18817   valid-logloss:0.19479
+Fold 1 score: 0.19479
+[0] train-logloss:0.68520   valid-logloss:0.68519
+[999]   train-logloss:0.18907   valid-logloss:0.19160
+Fold 2 score: 0.19160
+[0] train-logloss:0.68521   valid-logloss:0.68519
+[999]   train-logloss:0.18921   valid-logloss:0.19080
+Fold 3 score: 0.19080
+[0] train-logloss:0.68521   valid-logloss:0.68520
+[999]   train-logloss:0.18913   valid-logloss:0.19146
+Fold 4 score: 0.19146
+CV score: 0.19321</code></pre>
+</div>
+</div>
+<p>It sure looks that way.</p>
+<p>Let’s move on. As of yet, the model doesn’t seem to use the information contained in the <code>y</code> velocity of the players. Do some aggregations for both teams help?</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:25:46.877375Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:25:46.876419Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:25:46.884681Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:25:46.883530Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:25:46.877339Z&quot;}" data-trusted="true" data-execution_count="53">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> yvel_team(df):</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"yvel_A_max"</span>] <span class="op">=</span> df[[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_vel_y"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].<span class="bu">max</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"yvel_B_max"</span>] <span class="op">=</span> df[[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_vel_y"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>, <span class="dv">6</span>)]].<span class="bu">max</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"yvel_A_mean"</span>] <span class="op">=</span> df[[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_vel_y"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_features(df):</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_ball_goal(df)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_team_ball(df)</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_team_goal(df)</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> yvel_team(df)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:26:45.953515Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:26:45.952879Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:26:51.655193Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:26:51.654062Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:26:45.953450Z&quot;}" data-trusted="true" data-execution_count="54">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> compute_features(train_df)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>test_df <span class="op">=</span> compute_features(test_df)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>yvel_features <span class="op">=</span> [<span class="st">"yvel_A_max"</span>, <span class="st">"yvel_B_max"</span>, <span class="st">"yvel_A_mean"</span>]</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>features <span class="op">+=</span> yvel_features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>The as_gpu_matrix method will be removed in a future cuDF release. Consider using `to_cupy` instead.</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:26:57.093571Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:26:57.092976Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:29:51.466508Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:29:51.465427Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:26:57.093519Z&quot;}" data-trusted="true" data-execution_count="55">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>shap_values <span class="op">=</span> run_cv(train_df, features)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0] train-logloss:0.68518   valid-logloss:0.68522
+[999]   train-logloss:0.18756   valid-logloss:0.19735
+Fold 0 score: 0.19735
+[0] train-logloss:0.68520   valid-logloss:0.68521
+[999]   train-logloss:0.18823   valid-logloss:0.19466
+Fold 1 score: 0.19466
+[0] train-logloss:0.68520   valid-logloss:0.68520
+[999]   train-logloss:0.18912   valid-logloss:0.19169
+Fold 2 score: 0.19169
+[0] train-logloss:0.68521   valid-logloss:0.68519
+[999]   train-logloss:0.18918   valid-logloss:0.19081
+Fold 3 score: 0.19081
+[0] train-logloss:0.68521   valid-logloss:0.68520
+[999]   train-logloss:0.18909   valid-logloss:0.19140
+Fold 4 score: 0.19140
+CV score: 0.19318</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:30:12.504543Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:30:12.503913Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:30:13.106533Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:30:13.105521Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:30:12.504501Z&quot;}" data-trusted="true" data-execution_count="56">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>shap.summary_plot(shap_values[:, :<span class="op">-</span><span class="dv">1</span>], features, plot_type<span class="op">=</span><span class="st">"bar"</span>, max_display<span class="op">=</span><span class="dv">70</span>, plot_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">8</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-29-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>That’s another tiny improvement. Let’s try one last thing: The player’s boost appears to be very important. What about corresponding aggregate features for both teams?</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:30:58.628575Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:30:58.628205Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:30:58.636289Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:30:58.635132Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:30:58.628541Z&quot;}" data-trusted="true" data-execution_count="57">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> boost_team(df):</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    players_A <span class="op">=</span> df[[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_boost"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].copy()</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"boost_A_min"</span>] <span class="op">=</span> players_A.<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"boost_A_max"</span>] <span class="op">=</span> players_A.<span class="bu">max</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"boost_A_mean"</span>] <span class="op">=</span> players_A.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    players_B <span class="op">=</span> df[[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_boost"</span> <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>, <span class="dv">6</span>)]].copy()</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"boost_B_min"</span>] <span class="op">=</span> players_B.<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"boost_B_max"</span>] <span class="op">=</span> players_B.<span class="bu">max</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"boost_B_mean"</span>] <span class="op">=</span> players_B.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_features(df):</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_ball_goal(df)</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_team_ball(df)</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> distance_team_goal(df)</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> yvel_team(df)</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> boost_team(df)</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:31:43.374027Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:31:43.373311Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:31:49.688010Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:31:49.686808Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:31:43.373988Z&quot;}" data-trusted="true" data-execution_count="58">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> compute_features(train_df)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>test_df <span class="op">=</span> compute_features(test_df)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>boost_features <span class="op">=</span> [<span class="st">"boost_A_min"</span>, <span class="st">"boost_A_max"</span>, <span class="st">"boost_A_mean"</span>, <span class="st">"boost_B_min"</span>, <span class="st">"boost_B_max"</span>, <span class="st">"boost_B_mean"</span>]</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>features <span class="op">+=</span> boost_features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>The as_gpu_matrix method will be removed in a future cuDF release. Consider using `to_cupy` instead.</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:31:52.363067Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:31:52.362450Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:35:04.243578Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:35:04.242425Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:31:52.363028Z&quot;}" data-trusted="true" data-execution_count="59">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>shap_values <span class="op">=</span> run_cv(train_df, features)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0] train-logloss:0.68518   valid-logloss:0.68522
+[999]   train-logloss:0.18763   valid-logloss:0.19730
+Fold 0 score: 0.19730
+[0] train-logloss:0.68520   valid-logloss:0.68521
+[999]   train-logloss:0.18830   valid-logloss:0.19456
+Fold 1 score: 0.19456
+[0] train-logloss:0.68520   valid-logloss:0.68519
+[999]   train-logloss:0.18916   valid-logloss:0.19151
+Fold 2 score: 0.19151
+[0] train-logloss:0.68521   valid-logloss:0.68519
+[999]   train-logloss:0.18930   valid-logloss:0.19056
+Fold 3 score: 0.19056
+[0] train-logloss:0.68520   valid-logloss:0.68520
+[999]   train-logloss:0.18917   valid-logloss:0.19120
+Fold 4 score: 0.19120
+CV score: 0.19302</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-21T16:35:23.033295Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-21T16:35:23.032924Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-21T16:35:23.908238Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-21T16:35:23.907045Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-21T16:35:23.033261Z&quot;}" data-trusted="true" data-execution_count="60">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>shap.summary_plot(shap_values[:, :<span class="op">-</span><span class="dv">1</span>], features, plot_type<span class="op">=</span><span class="st">"bar"</span>, max_display<span class="op">=</span><span class="dv">70</span>, plot_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">8</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-33-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>That’s yet another improvement of the CV score.</p>
+<p>There are endless potential avenues for feature engineering left: we could add features related to missing players, try to leverage angles computed for the movement of the players and the ball in relation to each other and the goal, extrapolate the position of the ball based on its velocity vector, make more out of the boost timers (maybe link them to the position of the players), experiment with binning to see whether the high precision really is useful, etc. For the sake of brevity, though, we’ll call it a day.</p>
+<p>In the next and final post, we’ll try to improve our model further with hyperparameter optimization.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
