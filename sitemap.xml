@@ -2,10 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_intro/index.html</loc>
-    <lastmod>2023-04-12T08:36:33.696Z</lastmod>
+    <lastmod>2023-04-12T08:40:10.291Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iammees.github.io/posts/chatgpt_api_sentiment/index.html</loc>
+    <lastmod>2023-04-12T08:40:11.221Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/index.html</loc>
-    <lastmod>2023-04-12T08:36:34.209Z</lastmod>
+    <lastmod>2023-04-12T08:40:11.662Z</lastmod>
   </url>
 </urlset>
