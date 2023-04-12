@@ -201,7 +201,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </details>
 </div>
 <p>As an example for this series about tabular problems, we’ll use a custom subset of a <a href="https://www.kaggle.com/competitions/tabular-playground-series-oct-2022/data">dataset</a> containing snapshots of professional Rocket League matches. (<a href="https://en.wikipedia.org/wiki/Rocket_League">Rocket League</a> is a video game where two teams use rocket-powered vehicles to play soccer.) I’ve picked this dataset because it is quite intuitive, can be visualized nicely, requires attention when setting up the validation scheme, and offers vast possibilities for feature engineering. If you, like me, have never heard of Rocket League, that’s not a problem – there is a huge amount of recorded gameplay on YouTube, if you are curious. Our goal will be to predict, based on a <em>single</em> snapshot of a game, the probability that team A will score within the next 10 seconds.</p>
-<p>Let’s get a quick overview of the available features: - <code>game_num</code>: unique identifier for the game from which the event was taken - <code>event_id</code>: unique identifier for the sequence of consecutive frames - <code>event_time</code>: time in seconds before the event ended, either by a goal being scored or by truncation if a goal wasn’t scored; only in train - <code>team_A_scoring_within_10sec</code>: the target column; <code>1</code> if the team scores in the next 10 seconds of the game, <code>0</code> otherwise - <code>team_B_scoring_within_10sec</code>: only in train - Ball: - <code>ball_pos_[xyz]</code>: position of the ball as a 3d vector - <code>ball_vel_[xyz]</code>: velocity of the ball as a 3d vector - Players: - <code>p{i}_pos_[xyz]</code>: position of player <span class="math inline">\(i\)</span> as a 3d vector - <code>p{i}_vel_[xyz]</code>: velocity of player <span class="math inline">\(i\)</span> as a 3d vector - <code>p{i}_boost</code>: remaining boost of player <span class="math inline">\(i\)</span> - Note: All columns related to a specific player will be <code>NaN</code> if the player has been demolished and hasn’t respawned yet. Team <code>A</code> consists of players 0, 1, and 2; Team <code>B</code> consists of player 3, 4, and 5. - Boost: - <code>boost{i}_timer</code>: time in seconds until big boost orb i respawns, <code>0</code> if it is available</p>
+<p>Let’s get a quick overview of the available features:</p>
+<ul>
+<li><code>game_num</code>: unique identifier for the game from which the event was taken</li>
+<li><code>event_id</code>: unique identifier for the sequence of consecutive frames</li>
+<li><code>event_time</code>: time in seconds before the event ended, either by a goal being scored or by truncation if a goal wasn’t scored; only in train</li>
+<li><code>team_A_scoring_within_10sec</code>: the target column; <code>1</code> if the team scores in the next 10 seconds of the game, <code>0</code> otherwise</li>
+<li><code>team_B_scoring_within_10sec</code>: only in train</li>
+<li>Ball:
+<ul>
+<li><code>ball_pos_[xyz]</code>: position of the ball as a 3d vector</li>
+<li><code>ball_vel_[xyz]</code>: velocity of the ball as a 3d vector</li>
+</ul></li>
+<li>Players:
+<ul>
+<li><code>p{i}_pos_[xyz]</code>: position of player <span class="math inline">\(i\)</span> as a 3d vector</li>
+<li><code>p{i}_vel_[xyz]</code>: velocity of player <span class="math inline">\(i\)</span> as a 3d vector</li>
+<li><code>p{i}_boost</code>: remaining boost of player <span class="math inline">\(i\)</span></li>
+<li>Note: All columns related to a specific player will be <code>NaN</code> if the player has been demolished and hasn’t respawned yet. Team <code>A</code> consists of players 0, 1, and 2; Team <code>B</code> consists of player 3, 4, and 5.</li>
+</ul></li>
+<li>Boost:
+<ul>
+<li><code>boost{i}_timer</code>: time in seconds until big boost orb i respawns, <code>0</code> if it is available</li>
+</ul></li>
+</ul>
 <p>Let’s see what EDA can reveal about the dataset.</p>
 <div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:21:55.351987Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:21:55.351562Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:21:55.357494Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:21:55.356510Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:21:55.351953Z&quot;}" data-trusted="true" data-execution_count="41">
 <details>
@@ -262,7 +285,15 @@ dtype: float64</code></pre>
 </section>
 <section id="ball-position" class="level3">
 <h3 class="anchored" data-anchor-id="ball-position">Ball position</h3>
-<p>The position of the ball’s center point is provided with <code>x</code>, <code>y</code>, and <code>z</code> coordinates in the <code>ball_pos_[xyz]</code> features. The histograms below show the following: - The pitch is around <code>160</code> units wide, <code>200</code> units long, and <code>40</code> units high. - All dimensions are centered, which means that the point <code>[0, 0 ,0]</code> is where the kick-off happens (i.e.&nbsp;where each game begins and resumes after a goal). - The most common ball positions for all dimensions are <code>0</code>. This is not surprising because all events in the dataset begin with a kick-off. - For the <code>x</code> dimension, values at the sides of the pitch appear more often. - For the <code>y</code> dimension, the histogram shows that the gameplay is somewhat orientated towards the goals. The rather small values at either side probably reflect that the ball was in the respective goal. - For the <code>z</code> dimension, we can see that higher values appear increasingly less frequently. Still, the ball is quite often flying in the air.</p>
+<p>The position of the ball’s center point is provided with <code>x</code>, <code>y</code>, and <code>z</code> coordinates in the <code>ball_pos_[xyz]</code> features. The histograms below show the following:</p>
+<ul>
+<li>The pitch is around <code>160</code> units wide, <code>200</code> units long, and <code>40</code> units high.</li>
+<li>All dimensions are centered, which means that the point <code>[0, 0 ,0]</code> is where the kick-off happens (i.e.&nbsp;where each game begins and resumes after a goal).</li>
+<li>The most common ball positions for all dimensions are <code>0</code>. This is not surprising because all events in the dataset begin with a kick-off.</li>
+<li>For the <code>x</code> dimension, values at the sides of the pitch appear more often.</li>
+<li>For the <code>y</code> dimension, the histogram shows that the gameplay is somewhat orientated towards the goals. The rather small values at either side probably reflect that the ball was in the respective goal.</li>
+<li>For the <code>z</code> dimension, we can see that higher values appear increasingly less frequently. Still, the ball is quite often flying in the air.</li>
+</ul>
 <div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:22:19.673996Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:22:19.673594Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:22:20.931563Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:22:20.930016Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:22:19.673962Z&quot;}" data-trusted="true" data-execution_count="45">
 <details>
 <summary>Code</summary>
@@ -290,7 +321,18 @@ z coordinate: min = 1.142    max = 39.428</code></pre>
 <section id="size-of-the-pitch-and-position-of-the-goals" class="level4">
 <h4 class="anchored" data-anchor-id="size-of-the-pitch-and-position-of-the-goals">Size of the pitch and position of the goals</h4>
 <p>Let’s focus on observations where the ball is inside the goal.</p>
-<p>We can see that: - the goals are centered at <code>x=0</code> on either side of the pitch - the goal lines are at <code>y=-100</code> and <code>y=100</code>, respectively - the goals are around <code>35</code> units wide and <code>12</code> units high - if a goal is scored: - the <code>x</code> position of the ball when crossing the goal line is essentially uniformly distributed - the ball sometimes just barely crosses the goal line (see the two small bars of the histogram for the <code>y</code> dimension) - most goals are scored with the ball rolling on the pitch (or flying very low), otherwise the <code>z</code> dimension is quite uniformly distributed</p>
+<p>We can see that:</p>
+<ul>
+<li>the goals are centered at <code>x=0</code> on either side of the pitch</li>
+<li>the goal lines are at <code>y=-100</code> and <code>y=100</code>, respectively</li>
+<li>the goals are around <code>35</code> units wide and <code>12</code> units high</li>
+<li>if a goal is scored:
+<ul>
+<li>the <code>x</code> position of the ball when crossing the goal line is essentially uniformly distributed</li>
+<li>the ball sometimes just barely crosses the goal line (see the two small bars of the histogram for the <code>y</code> dimension)</li>
+<li>most goals are scored with the ball rolling on the pitch (or flying very low), otherwise the <code>z</code> dimension is quite uniformly distributed</li>
+</ul></li>
+</ul>
 <div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:22:44.699104Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:22:44.698660Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:22:45.811297Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:22:45.810105Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:22:44.699065Z&quot;}" data-trusted="true" data-execution_count="46">
 <details>
 <summary>Code</summary>
@@ -331,7 +373,11 @@ z coordinate: min = 1.606    max = 11.085</code></pre>
 </section>
 <section id="ball-position-and-goal-scoring" class="level4">
 <h4 class="anchored" data-anchor-id="ball-position-and-goal-scoring">Ball position and goal scoring</h4>
-<p>It seems natural that the position of the ball is related to our target. Let’s plot the ball positions (the <code>x</code> and <code>y</code> dimension for now) depending on the outcome. There are a few things to notice: - If either team scores in the next ten seconds, the ball unsurprisingly tends to be in the half of the defending team, particularly in front of the goal. - It seems to be common that a goal is scored in the 10 seconds after kick-off (since we can clearly see the center spot in the scatterplots).</p>
+<p>It seems natural that the position of the ball is related to our target. Let’s plot the ball positions (the <code>x</code> and <code>y</code> dimension for now) depending on the outcome. There are a few things to notice:</p>
+<ul>
+<li>If either team scores in the next ten seconds, the ball unsurprisingly tends to be in the half of the defending team, particularly in front of the goal.</li>
+<li>It seems to be common that a goal is scored in the 10 seconds after kick-off (since we can clearly see the center spot in the scatterplots).</li>
+</ul>
 <div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:23:08.756231Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:23:08.755848Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:23:15.381676Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:23:15.380456Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:23:08.756199Z&quot;}" data-trusted="true" data-execution_count="48">
 <details>
 <summary>Code</summary>
@@ -494,7 +540,12 @@ z coordinate: min = 1.606    max = 11.085</code></pre>
 </section>
 <section id="player-position" class="level3">
 <h3 class="anchored" data-anchor-id="player-position">Player position</h3>
-<p>The position of player <code>i</code> is provided with <code>x</code>, <code>y</code>, and <code>z</code> coordinates in the <code>p{i}_pos_[xyz]</code> features. Since the histograms of members of the same team are identical, only histograms for player <code>0</code> (first player of team A) and <code>3</code> (first player of team B) are shown. As expected, they are essentially mirror images. The histograms show the following: - For the <code>x</code> dimension, values at the center and the extremes are the most common. The latter is probably due to the fact that cars can drive up the walls to gain height. - For the <code>y</code> dimension, we can see that players are more often in their own half of the pitch than in the half of their opponents (team A attacks in the direction of positive <code>y</code> values). There are peaks on both goal lines, in front of the goals, and in the center of the pitch. - For the <code>z</code> dimension, we can see that high values appear quite rarely (in stark contrast to the ball). As mentioned earlier, the cars require “boost” (which is not abundantly available) to fly in the <code>z</code> dimension.</p>
+<p>The position of player <code>i</code> is provided with <code>x</code>, <code>y</code>, and <code>z</code> coordinates in the <code>p{i}_pos_[xyz]</code> features. Since the histograms of members of the same team are identical, only histograms for player <code>0</code> (first player of team A) and <code>3</code> (first player of team B) are shown. As expected, they are essentially mirror images. The histograms show the following:</p>
+<ul>
+<li>For the <code>x</code> dimension, values at the center and the extremes are the most common. The latter is probably due to the fact that cars can drive up the walls to gain height.</li>
+<li>For the <code>y</code> dimension, we can see that players are more often in their own half of the pitch than in the half of their opponents (team A attacks in the direction of positive <code>y</code> values). There are peaks on both goal lines, in front of the goals, and in the center of the pitch.</li>
+<li>For the <code>z</code> dimension, we can see that high values appear quite rarely (in stark contrast to the ball). As mentioned earlier, the cars require “boost” (which is not abundantly available) to fly in the <code>z</code> dimension.</li>
+</ul>
 <div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-20T08:24:50.212446Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-20T08:24:50.211087Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-20T08:24:52.905453Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-20T08:24:52.904083Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-20T08:24:50.212388Z&quot;}" data-trusted="true" data-execution_count="18">
 <details>
 <summary>Code</summary>
@@ -733,7 +784,11 @@ z coordinate: min = -45.953  max = 45.400</code></pre>
 <p><img src="index_files/figure-html/cell-25-output-1.png" class="img-fluid"></p>
 </div>
 </div>
-<p>Comparing this to the scatterplots for team <code>B</code> shows two things: - defending players are more likely to use boost for maximum velocity when rushing back to defend their own goal (this is probably a very good indicator for an imminent goal) - defending players make significantly less use of the <code>z</code> dimension in the last seconds before a goal than attacking players</p>
+<p>Comparing this to the scatterplots for team <code>B</code> shows two things:</p>
+<ul>
+<li>defending players are more likely to use boost for maximum velocity when rushing back to defend their own goal (this is probably a very good indicator for an imminent goal)</li>
+<li>defending players make significantly less use of the <code>z</code> dimension in the last seconds before a goal than attacking players</li>
+</ul>
 <div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:52:56.148833Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:52:56.147753Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:52:58.670341Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:52:58.669171Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:52:56.148786Z&quot;}" data-trusted="true" data-execution_count="93">
 <details>
 <summary>Code</summary>
@@ -773,7 +828,12 @@ z coordinate: min = -45.953  max = 45.400</code></pre>
 </div>
 <section id="player-boost-and-goal-scoring" class="level4">
 <h4 class="anchored" data-anchor-id="player-boost-and-goal-scoring">Player boost and goal scoring</h4>
-<p>We again look at the last seconds before a goal to see whether there are useful patterns and indeed there are: - Players of both teams (attacking as well as defending) tend to use boost in the last seconds before a goal. - Members of the attacking team more often use up all their boost than defending players. - Members of the defending team more often have used up all their boost when a goal is imminent than attacking players.</p>
+<p>We again look at the last seconds before a goal to see whether there are useful patterns and indeed there are:</p>
+<ul>
+<li>Players of both teams (attacking as well as defending) tend to use boost in the last seconds before a goal.</li>
+<li>Members of the attacking team more often use up all their boost than defending players.</li>
+<li>Members of the defending team more often have used up all their boost when a goal is imminent than attacking players.</li>
+</ul>
 <div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:53:50.537356Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:53:50.536288Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:53:52.994580Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:53:52.993386Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:53:50.537308Z&quot;}" data-trusted="true" data-execution_count="97">
 <details>
 <summary>Code</summary>
