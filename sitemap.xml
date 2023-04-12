@@ -1,23 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://iammees.github.io/posts/post-with-code/index.html</loc>
-    <lastmod>2023-04-12T08:00:28.393Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iammees.github.io/posts/welcome/index.html</loc>
-    <lastmod>2023-04-12T08:00:28.749Z</lastmod>
-  </url>
-  <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_intro/index.html</loc>
-    <lastmod>2023-04-12T08:00:29.420Z</lastmod>
+    <lastmod>2023-04-12T08:06:04.758Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/index.html</loc>
-    <lastmod>2023-04-12T08:00:29.936Z</lastmod>
+    <lastmod>2023-04-12T08:06:05.153Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/about.html</loc>
-    <lastmod>2023-04-12T08:00:30.260Z</lastmod>
+    <lastmod>2023-04-12T08:06:05.481Z</lastmod>
   </url>
 </urlset>
