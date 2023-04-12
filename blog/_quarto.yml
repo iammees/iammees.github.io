@@ -5,9 +5,9 @@ website:
   title: "iammees"
   navbar:
     search: true
-    left:
-      - text: "iammees"
-        file: index.qmd
+    right:
+      - icon: github
+        href: https://github.com/iammees
 format:
   html:
     theme: flatly
