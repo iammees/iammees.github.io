@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-12-02">
+
+<title>iammees - Image Classification with TensorFlow Keras</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Image Classification with TensorFlow Keras</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">December 2, 2021</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>In this post, we’ll go through a workflow in TensorFlow for finetuning a pretrained model for image classification. We’ll use <a href="https://www.kaggle.com/competitions/flower-classification-with-tpus/data">this</a> dataset that contains images of 104 types of flowers as an example. Let’s dive right in.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:02.767291Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:02.766055Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:14.384834Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:14.383795Z&quot;}" data-papermill="{&quot;duration&quot;:11.635467,&quot;end_time&quot;:&quot;2023-02-17T18:16:14.387597&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:02.752130&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorflow <span class="im">as</span> tf</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorflow_hub <span class="im">as</span> hub</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> f1_score, precision_score, recall_score, confusion_matrix</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<section id="mixed-precision" class="level3">
+<h3 class="anchored" data-anchor-id="mixed-precision">Mixed precision</h3>
+<p>On GPUs with Tensor Cores (i.e., GPUs with <a href="https://developer.nvidia.com/cuda-gpus">compute capability of at least 7.0</a>) training with mixed precision can provide significant speedups. Mixed precision translates to running operations in float16 if possible while keeping variables and some computations in float32 for numeric reasons. This speeds up reading from memory as well as run times, and often allows to double the batch size.</p>
+<p>To use mixed precision in Keras, we need to set a global policy:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:14.528434Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:14.527496Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:14.917821Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:14.916920Z&quot;}" data-papermill="{&quot;duration&quot;:0.407435,&quot;end_time&quot;:&quot;2023-02-17T18:16:14.920409&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:14.512974&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="3">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>tf.keras.mixed_precision.set_global_policy(<span class="st">"mixed_float16"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Important:</p>
+<ul>
+<li>In order to guarantee numeric stability, the outputs of our model’s last layer have to be in float32. Since each Keras layer uses the global policy by default, we have to specify the corresponding <code>dtype</code> explicitly.</li>
+<li>Tensor Cores require most tensor dimensions to be a multiple of 8. See Nvidia’s <a href="https://docs.nvidia.com/deeplearning/performance/mixed-precision-training/index.html">performance guide</a> for details.</li>
+<li>If we implement a custom training loop (i.e., if we don’t use <code>tf.keras.Model.fit()</code>), we have to prevent our gradients from underflowing to zero by using loss scaling. See this <a href="https://www.tensorflow.org/guide/mixed_precision#loss_scaling_overview">guide</a> for more.</li>
+<li>On CPUs float16 operations are slower than float32 operations. Thus, input processing on the CPU should generally be in float32.</li>
+</ul>
+</section>
+<section id="distribution-strategy" class="level3">
+<h3 class="anchored" data-anchor-id="distribution-strategy">Distribution Strategy</h3>
+<p>TensorFlow offers the <code>tf.distribute.Strategy</code> API to easily scale model training onto multiple GPUs, multiple machines, or TPUs. The following three strategies are the most common:</p>
+<ul>
+<li><code>tf.distribute.MirroredStrategy</code>: Use this strategy when using a single machine with one or more GPUs. Replicates the model graph and all variables on each available GPU and distributes the input evenly across all replicas. Each replica calculates the gradients for its input; the gradients are synced across all replicas by summing them so that the same update is made on all replicas.</li>
+<li><code>tf.distribute.MultiWorkerMirroredStrategy</code>: Extends the <code>MirroredStrategy</code> to a multi-machine setup. Requires <a href="https://www.tensorflow.org/guide/distributed_training#TF_CONFIG">setting up the <code>TF_CONFIG</code> environment variable</a> correctly.</li>
+<li><code>tf.distribute.TPUStrategy</code>: The strategy when using Google’s TPUs.</li>
+</ul>
+<p>Here we’ll use <code>tf.distribute.MirroredStrategy</code> since we want to train on two GPUs. For more on distributed training with TensorFlow, see the corresponding <a href="https://www.tensorflow.org/guide/distributed_training">guide</a>.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:15.035043Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:15.034612Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.035480Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.034512Z&quot;}" data-papermill="{&quot;duration&quot;:6.02758,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.038396&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:15.010816&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="4">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> tf.distribute.MirroredStrategy()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"# replicas:"</span>, strategy.num_replicas_in_sync)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># replicas: 2</code></pre>
+</div>
+</div>
+</section>
+<section id="autotune" class="level3">
+<h3 class="anchored" data-anchor-id="autotune">Autotune</h3>
+<p>When using TensorFlow’s <code>tf.data</code> API, we can use <code>AUTOTUNE</code> to automatically optimize the allocation of the CPU budget to speed up the input pipeline. We’ll see soon how this plays out.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.119585Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.118632Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.123611Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.122541Z&quot;}" data-papermill="{&quot;duration&quot;:0.021838,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.126335&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.104497&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="5">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>AUTO <span class="op">=</span> tf.data.AUTOTUNE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+<section id="loading-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-data">Loading the data</h2>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.179991Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.179718Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.189666Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.188700Z&quot;}" data-papermill="{&quot;duration&quot;:0.026441,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.191964&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.165523&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>BATCH_SIZE <span class="op">=</span> <span class="dv">32</span> <span class="op">*</span> strategy.num_replicas_in_sync</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>IMAGE_SIZE <span class="op">=</span> (<span class="dv">331</span>, <span class="dv">331</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>DATA_DIR <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>base_path<span class="sc">}</span><span class="ss">/tfrecords-jpeg-</span><span class="sc">{</span>IMAGE_SIZE[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">x</span><span class="sc">{</span>IMAGE_SIZE[<span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>CLASSES <span class="op">=</span> [<span class="st">'pink primrose'</span>,    <span class="st">'hard-leaved pocket orchid'</span>, <span class="st">'canterbury bells'</span>, <span class="st">'sweet pea'</span>,     <span class="st">'wild geranium'</span>,     <span class="st">'tiger lily'</span>,           <span class="st">'moon orchid'</span>,              <span class="st">'bird of paradise'</span>, <span class="st">'monkshood'</span>,        <span class="st">'globe thistle'</span>,         <span class="co"># 00 - 09</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>           <span class="st">'snapdragon'</span>,       <span class="st">"colt's foot"</span>,               <span class="st">'king protea'</span>,      <span class="st">'spear thistle'</span>, <span class="st">'yellow iris'</span>,       <span class="st">'globe-flower'</span>,         <span class="st">'purple coneflower'</span>,        <span class="st">'peruvian lily'</span>,    <span class="st">'balloon flower'</span>,   <span class="st">'giant white arum lily'</span>, <span class="co"># 10 - 19</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>           <span class="st">'fire lily'</span>,        <span class="st">'pincushion flower'</span>,         <span class="st">'fritillary'</span>,       <span class="st">'red ginger'</span>,    <span class="st">'grape hyacinth'</span>,    <span class="st">'corn poppy'</span>,           <span class="st">'prince of wales feathers'</span>, <span class="st">'stemless gentian'</span>, <span class="st">'artichoke'</span>,        <span class="st">'sweet william'</span>,         <span class="co"># 20 - 29</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>           <span class="st">'carnation'</span>,        <span class="st">'garden phlox'</span>,              <span class="st">'love in the mist'</span>, <span class="st">'cosmos'</span>,        <span class="st">'alpine sea holly'</span>,  <span class="st">'ruby-lipped cattleya'</span>, <span class="st">'cape flower'</span>,              <span class="st">'great masterwort'</span>, <span class="st">'siam tulip'</span>,       <span class="st">'lenten rose'</span>,           <span class="co"># 30 - 39</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>           <span class="st">'barberton daisy'</span>,  <span class="st">'daffodil'</span>,                  <span class="st">'sword lily'</span>,       <span class="st">'poinsettia'</span>,    <span class="st">'bolero deep blue'</span>,  <span class="st">'wallflower'</span>,           <span class="st">'marigold'</span>,                 <span class="st">'buttercup'</span>,        <span class="st">'daisy'</span>,            <span class="st">'common dandelion'</span>,      <span class="co"># 40 - 49</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>           <span class="st">'petunia'</span>,          <span class="st">'wild pansy'</span>,                <span class="st">'primula'</span>,          <span class="st">'sunflower'</span>,     <span class="st">'lilac hibiscus'</span>,    <span class="st">'bishop of llandaff'</span>,   <span class="st">'gaura'</span>,                    <span class="st">'geranium'</span>,         <span class="st">'orange dahlia'</span>,    <span class="st">'pink-yellow dahlia'</span>,    <span class="co"># 50 - 59</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>           <span class="st">'cautleya spicata'</span>, <span class="st">'japanese anemone'</span>,          <span class="st">'black-eyed susan'</span>, <span class="st">'silverbush'</span>,    <span class="st">'californian poppy'</span>, <span class="st">'osteospermum'</span>,         <span class="st">'spring crocus'</span>,            <span class="st">'iris'</span>,             <span class="st">'windflower'</span>,       <span class="st">'tree poppy'</span>,            <span class="co"># 60 - 69</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>           <span class="st">'gazania'</span>,          <span class="st">'azalea'</span>,                    <span class="st">'water lily'</span>,       <span class="st">'rose'</span>,          <span class="st">'thorn apple'</span>,       <span class="st">'morning glory'</span>,        <span class="st">'passion flower'</span>,           <span class="st">'lotus'</span>,            <span class="st">'toad lily'</span>,        <span class="st">'anthurium'</span>,             <span class="co"># 70 - 79</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>           <span class="st">'frangipani'</span>,       <span class="st">'clematis'</span>,                  <span class="st">'hibiscus'</span>,         <span class="st">'columbine'</span>,     <span class="st">'desert-rose'</span>,       <span class="st">'tree mallow'</span>,          <span class="st">'magnolia'</span>,                 <span class="st">'cyclamen '</span>,        <span class="st">'watercress'</span>,       <span class="st">'canna lily'</span>,            <span class="co"># 80 - 89</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>           <span class="st">'hippeastrum '</span>,     <span class="st">'bee balm'</span>,                  <span class="st">'pink quill'</span>,       <span class="st">'foxglove'</span>,      <span class="st">'bougainvillea'</span>,     <span class="st">'camellia'</span>,             <span class="st">'mallow'</span>,                   <span class="st">'mexican petunia'</span>,  <span class="st">'bromelia'</span>,         <span class="st">'blanket flower'</span>,        <span class="co"># 90 - 99</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>           <span class="st">'trumpet creeper'</span>,  <span class="st">'blackberry lily'</span>,           <span class="st">'common tulip'</span>,     <span class="st">'wild rose'</span>] </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="working-with-tfrecords" class="level3">
+<h3 class="anchored" data-anchor-id="working-with-tfrecords">Working with TFRecords</h3>
+<p>In this example, the data is available in multiple <a href="https://www.tensorflow.org/tutorials/load_data/tfrecord">TFRecord</a> files. TFRecord is an efficient format for storing a sequence of binary records allowing very fast I/O operations. To easily stream the contents of one or more TFRecord files, we can use the <code>tf.data</code> API (more specifically, the <a href="https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset"><code>tf.data.TFRecordDataset</code></a> class; we just need to pass in a list of filenames).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.273019Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.272156Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.349431Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.348422Z&quot;}" data-papermill="{&quot;duration&quot;:0.094212,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.352291&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.258079&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="7">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>raw_paths <span class="op">=</span> tf.io.gfile.glob(DATA_DIR <span class="op">+</span> <span class="st">"/train/*.tfrec"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>raw_dataset <span class="op">=</span> tf.data.TFRecordDataset(raw_paths)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.383945Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.382344Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.507410Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.505907Z&quot;}" data-papermill="{&quot;duration&quot;:0.143051,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.509778&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.366727&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="8">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> example <span class="kw">in</span> raw_dataset.take(<span class="dv">3</span>):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="bu">repr</span>(example)[:<span class="dv">300</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;tf.Tensor: shape=(), dtype=string, numpy=b'\n\xa3\xb6\x02\n\x13\n\x02id\x12\r\n\x0b\n\t05fa7d4ca\n\x0e\n\x05class\x12\x05\x1a\x03\n\x01f\n\xfa\xb5\x02\n\x05image\x12\xef\xb5\x02\n\xeb\xb5\x02\n\xe7\xb5\x02\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x01,\x01,\x00\x00\xff\xdb\x00C\x00\x02\x01\x01\x0
+&lt;tf.Tensor: shape=(), dtype=string, numpy=b'\n\xaf\xde\x03\n\x13\n\x02id\x12\r\n\x0b\n\tbafaca028\n\x0e\n\x05class\x12\x05\x1a\x03\n\x01\x08\n\x86\xde\x03\n\x05image\x12\xfb\xdd\x03\n\xf7\xdd\x03\n\xf3\xdd\x03\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x01,\x01,\x00\x00\xff\xdb\x00C\x00\x02\x01\x01
+&lt;tf.Tensor: shape=(), dtype=string, numpy=b'\n\xee\xc5\x03\n\x0e\n\x05class\x12\x05\x1a\x03\n\x01\x0e\n\xc5\xc5\x03\n\x05image\x12\xba\xc5\x03\n\xb6\xc5\x03\n\xb2\xc5\x03\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x01,\x01,\x00\x00\xff\xdb\x00C\x00\x02\x01\x01\x01\x01\x01\x02\x01\x01\x01\x02\x02\x0</code></pre>
+</div>
+</div>
+<p>As we can see, we’ll have to decode the examples. For this purpose, we can use the following function that takes in a raw example and returns the image and its class label. Since we’ll use MixUp later, we need to return the one-hot encoded class labels. Also, we ignore the <code>id</code> feature since we won’t need it.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.564732Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.564488Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.571406Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.570473Z&quot;}" data-papermill="{&quot;duration&quot;:0.023403,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.573496&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.550093&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="9">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> parse_tfrecord(example):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    features <span class="op">=</span> {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"image"</span>: tf.io.FixedLenFeature([], tf.string),</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"class"</span>: tf.io.FixedLenFeature([], tf.int64),</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"id"</span>: tf.io.FixedLenFeature([], tf.string),</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    example <span class="op">=</span> tf.io.parse_single_example(example, features)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    image <span class="op">=</span> tf.image.decode_jpeg(example[<span class="st">'image'</span>], channels<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    image <span class="op">=</span> tf.reshape(image, [<span class="op">*</span>IMAGE_SIZE, <span class="dv">3</span>])</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> tf.one_hot(tf.cast(example[<span class="st">'class'</span>], tf.int32), <span class="bu">len</span>(CLASSES))</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> image, label</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Now we can read in the entire dataset using the function below. To benefit from parallelization (if possible), we can set <code>num_parallel_reads=AUTO</code>. For more on defining and reading TFRecords, see <a href="https://keras.io/examples/keras_recipes/creating_tfrecords/#define-dataset-helper-functions">here</a>.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.627428Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.627193Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.632364Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.631339Z&quot;}" data-papermill="{&quot;duration&quot;:0.022137,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.634956&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.612819&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="10">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> load_dataset(filenames):    </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    dataset <span class="op">=</span> (</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        tf.data.TFRecordDataset(filenames, num_parallel_reads<span class="op">=</span>AUTO)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">map</span>(parse_tfrecord, num_parallel_calls<span class="op">=</span>AUTO)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="creating-training-and-validation-splits" class="level3">
+<h3 class="anchored" data-anchor-id="creating-training-and-validation-splits">Creating training and validation splits</h3>
+<p>While stratified k-fold cross-validation (CV) would certainly be the best way to evaluate our training procedure, we’ll opt for a basic train-validation split to avoid unnecessary energy consumption and keep things simple. Also, the dataset already comes with predefined folders containing the images for training, validation and testing, respectively. To load the images, we simply gather the corresponding filenames.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.715022Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.714229Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.735781Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.734420Z&quot;}" data-papermill="{&quot;duration&quot;:0.03774,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.737951&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.700211&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="11">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>TRAIN_FILENAMES <span class="op">=</span> tf.io.gfile.glob(DATA_DIR <span class="op">+</span> <span class="st">'/train/*.tfrec'</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>VALID_FILENAMES <span class="op">=</span> tf.io.gfile.glob(DATA_DIR <span class="op">+</span> <span class="st">'/val/*.tfrec'</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> count_data_items(filenames):</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the name of the .tfrec files contains the number of images in the corresponding file</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 00-224x224-462.tfrec = 462 examples</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> [<span class="bu">int</span>(re.<span class="bu">compile</span>(<span class="vs">r"-([0-9]*)\."</span>).search(filename).group(<span class="dv">1</span>)) <span class="cf">for</span> filename <span class="kw">in</span> filenames]</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(n)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>num_training_images <span class="op">=</span> count_data_items(TRAIN_FILENAMES)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>num_validation_images <span class="op">=</span> count_data_items(VALID_FILENAMES)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Training images:"</span>, num_training_images)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Validation images:"</span>, num_validation_images)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Training images: 12753
+Validation images: 3712</code></pre>
+</div>
+</div>
+</section>
+<section id="data-augmentation" class="level3">
+<h3 class="anchored" data-anchor-id="data-augmentation">Data augmentation</h3>
+<p>For data augmentation, we begin by defining some basic transformations using <code>tf.image</code> methods. Note that we could also do this in Keras layers. To show that we can use Keras layers for preprocessing, we’ll add a <code>RandomCrop</code> layer at the beginning of our model (we could have done this in the data augmentation function too).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.817058Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.816800Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.823615Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.822792Z&quot;}" data-papermill="{&quot;duration&quot;:0.023542,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.825807&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.802265&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="12">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> augment_data(image, label):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    image <span class="op">=</span> tf.image.random_flip_left_right(image)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    image <span class="op">=</span> tf.image.random_brightness(image, <span class="fl">0.2</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    image <span class="op">=</span> tf.image.random_contrast(image, <span class="fl">0.5</span>, <span class="fl">2.</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    image <span class="op">=</span> tf.image.random_saturation(image, <span class="fl">0.8</span>, <span class="fl">1.2</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> image, label</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>We also implement the <a href="https://arxiv.org/abs/1710.09412">MixUp</a> augmentation technique.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.880065Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.879821Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:21.887648Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:21.886787Z&quot;}" data-papermill="{&quot;duration&quot;:0.024094,&quot;end_time&quot;:&quot;2023-02-17T18:16:21.889925&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.865831&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="13">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>MIXUP_FRAC <span class="op">=</span> <span class="fl">0.4</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mixup(img, label):</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _interpolate(b1, b2, t):</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> t<span class="op">*</span>b1 <span class="op">+</span> (<span class="dv">1</span><span class="op">-</span>t)<span class="op">*</span>b2</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> np.rint(MIXUP_FRAC <span class="op">*</span> <span class="bu">len</span>(img)).astype(np.int32)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> np.<span class="bu">round</span>(np.random.uniform(<span class="fl">0.5</span>, <span class="fl">0.8</span>), <span class="dv">2</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    img <span class="op">=</span> tf.image.convert_image_dtype(img, tf.float32)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    img1, label1 <span class="op">=</span> img[:n], label[:n]</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    img2, label2 <span class="op">=</span> img[<span class="dv">1</span>:n<span class="op">+</span><span class="dv">1</span>], label[<span class="dv">1</span>:n<span class="op">+</span><span class="dv">1</span>]</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    interp_img <span class="op">=</span> _interpolate(img1, img2, t)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    interp_label <span class="op">=</span> _interpolate(label1, label2, t)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    img <span class="op">=</span> tf.concat([interp_img, img[n:]], axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> tf.concat([interp_label, label[n:]], axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    img <span class="op">=</span> tf.image.convert_image_dtype(img, tf.uint8)</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> img, label</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="loading-the-training-and-validation-data" class="level3">
+<h3 class="anchored" data-anchor-id="loading-the-training-and-validation-data">Loading the training and validation data</h3>
+<p>Now we are ready to define the functions for loading the training and validation data. We begin with <code>get_training_dataset()</code>:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:21.996908Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:21.995371Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:22.002347Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:22.001495Z&quot;}" data-papermill="{&quot;duration&quot;:0.023326,&quot;end_time&quot;:&quot;2023-02-17T18:16:22.004712&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:21.981386&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="14">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_training_dataset():</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    dataset <span class="op">=</span> load_dataset(TRAIN_FILENAMES)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    dataset <span class="op">=</span> (</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>        dataset.<span class="bu">map</span>(augment_data, num_parallel_calls<span class="op">=</span>AUTO)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>               .repeat()</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>               .shuffle(BATCH_SIZE <span class="op">*</span> <span class="dv">8</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>               .batch(BATCH_SIZE, drop_remainder<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>               .<span class="bu">map</span>(mixup)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>               .prefetch(AUTO)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Let’s go through the method calls:</p>
+<ul>
+<li><code>map(augment_data)</code>: We start with applying the augmentations defined in the <code>augment_data</code> function.</li>
+<li><code>repeat()</code>: In practice, we often want to train for a fixed number of training examples instead of a fixed number of epochs. We call <code>repeat()</code> to avoid problems when we overestimate the size of our training dataset. If we underestimate the number of training examples, the remaining examples simply carry over to the next epoch. Note that computing the required number of steps for a (virtual) epoch is easy: <code>steps_per_epoch = num_training_examples // batch_size</code>.</li>
+<li><code>shuffle()</code>: In general, we want batches that contain different training examples (as opposed to batches with many similar examples, e.g., only images of roses). Thus, we randomize the examples by shuffling within a buffer that is (much) larger than the batch size. The size of the buffer should depend on how ordered the dataset is. (If the dataset is sorted by label, the buffer size has to cover the entire dataset. In that case, we should already shuffle the data when preparing the training dataset.)</li>
+<li><code>batch()</code>: Creates the batches of our desired batch size. The best batch size usually is the largest batch size that fits our machine.</li>
+<li><code>map(mixup)</code>: Since our implementation of mixup works with batches, we have to make the corresponding <code>map</code> call after the <code>batch()</code> operation.</li>
+<li><code>prefetch()</code>: Prefetching uses a background thread to prefetch elements from the input dataset needed for the next training step while the current training step is executed. We can set the number of elements that should be prefetched to <code>tf.data.AUTOTUNE</code> which automatically determines the value at runtime.</li>
+</ul>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:22.058299Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:22.058039Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:22.063054Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:22.062118Z&quot;}" data-papermill="{&quot;duration&quot;:0.021219,&quot;end_time&quot;:&quot;2023-02-17T18:16:22.065070&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:22.043851&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="15">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_validation_dataset():</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    dataset <span class="op">=</span> load_dataset(VALID_FILENAMES)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    dataset <span class="op">=</span> (</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        dataset.batch(BATCH_SIZE)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>               .prefetch(AUTO)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:22.093070Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:22.092524Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:22.469934Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:22.469017Z&quot;}" data-papermill="{&quot;duration&quot;:0.394517,&quot;end_time&quot;:&quot;2023-02-17T18:16:22.472551&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:22.078034&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="16">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>train_dataset <span class="op">=</span> get_training_dataset()</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>valid_dataset <span class="op">=</span> get_validation_dataset()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>More on optimizing the input pipeline using the <code>tf.data</code> API can be found in this <a href="https://www.tensorflow.org/guide/data_performance">guide</a>.</p>
+</section>
+<section id="visualize-examples" class="level3">
+<h3 class="anchored" data-anchor-id="visualize-examples">Visualize examples</h3>
+<p>Finally let’s have a look at some examples (normally we would have inspected the images right away, of course, but we skipped this step for the sake of brevity).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:22.581331Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:22.580622Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:22.586004Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:22.585103Z&quot;}" data-papermill="{&quot;duration&quot;:0.021792,&quot;end_time&quot;:&quot;2023-02-17T18:16:22.588003&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:22.566211&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="17">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_n_examples_as_np(dataset, n):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    dataset <span class="op">=</span> dataset.unbatch().batch(n)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> images, labels <span class="kw">in</span> dataset:</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>        np_images <span class="op">=</span> images.numpy()</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        np_labels <span class="op">=</span> labels.numpy()</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np_images, np_labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:22.616001Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:22.615729Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:22.622352Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:22.621451Z&quot;}" data-papermill="{&quot;duration&quot;:0.023253,&quot;end_time&quot;:&quot;2023-02-17T18:16:22.624452&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:22.601199&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="18">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> display_example(image, oh_labels<span class="op">=</span><span class="va">None</span>, fontsize<span class="op">=</span><span class="dv">13</span>):</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    plt.imshow(image)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> oh_labels <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>        label_idxs <span class="op">=</span> np.nonzero(oh_labels)[<span class="dv">0</span>]</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> np.array(CLASSES)[label_idxs]</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>        vals <span class="op">=</span> <span class="bu">list</span>(<span class="bu">map</span>(<span class="bu">str</span>, <span class="bu">list</span>(oh_labels[label_idxs])))</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        title <span class="op">=</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>.join(<span class="st">" "</span>.join(lb) <span class="cf">for</span> lb <span class="kw">in</span> <span class="bu">zip</span>(vals, labels))</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        plt.title(title, fontsize<span class="op">=</span>fontsize)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    plt.show()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:22.652116Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:22.651872Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:26.083027Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:26.082090Z&quot;}" data-papermill="{&quot;duration&quot;:3.448079,&quot;end_time&quot;:&quot;2023-02-17T18:16:26.085574&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:22.637495&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="19">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>imgs, lbls <span class="op">=</span> get_n_examples_as_np(train_dataset, <span class="dv">9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:26.121920Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:26.121429Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:26.423581Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:26.422652Z&quot;}" data-papermill="{&quot;duration&quot;:0.324222,&quot;end_time&quot;:&quot;2023-02-17T18:16:26.427033&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:26.102811&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="20">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>display_example(imgs[<span class="dv">0</span>], np.array(lbls[<span class="dv">0</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-20-output-1.png" class="quarto-discovered-preview-image img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:26.459531Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:26.459280Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:26.467055Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:26.466099Z&quot;}" data-papermill="{&quot;duration&quot;:0.026521,&quot;end_time&quot;:&quot;2023-02-17T18:16:26.469040&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:26.442519&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="21">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> display_examples(images, oh_labels<span class="op">=</span><span class="va">None</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">10</span>), fontsize<span class="op">=</span><span class="dv">13</span>, axis_off<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    plt.figure(figsize<span class="op">=</span>figsize)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">9</span>):</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>        ax <span class="op">=</span> plt.subplot(<span class="dv">3</span>, <span class="dv">3</span>, i<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>        plt.imshow(images[i])</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> oh_labels <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>            label_idxs <span class="op">=</span> np.nonzero(oh_labels[i])[<span class="dv">0</span>]</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>            labels <span class="op">=</span> np.array(CLASSES)[label_idxs]</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>            vals <span class="op">=</span> <span class="bu">list</span>(<span class="bu">map</span>(<span class="bu">str</span>, <span class="bu">list</span>(oh_labels[i][label_idxs])))</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>            title <span class="op">=</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>.join(<span class="st">" "</span>.join(lb) <span class="cf">for</span> lb <span class="kw">in</span> <span class="bu">zip</span>(vals, labels))</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>            plt.title(title, fontsize<span class="op">=</span>fontsize)</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> axis_off:</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>            plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:26.502132Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:26.501265Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:32.560670Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:32.559771Z&quot;}" data-papermill="{&quot;duration&quot;:6.087592,&quot;end_time&quot;:&quot;2023-02-17T18:16:32.572525&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:26.484933&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="22">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>imgs, lbls <span class="op">=</span> get_n_examples_as_np(train_dataset, <span class="dv">9</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>display_examples(imgs, lbls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-22-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="finetuning" class="level2">
+<h2 class="anchored" data-anchor-id="finetuning">Finetuning</h2>
+<section id="defining-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="defining-the-model">Defining the model</h3>
+<p>When it comes to choosing a pretrained model, there are a lot of great options. Here, we’ll just use a model from the EfficientNet family that is available in <code>tf.keras.applications</code> (if a model is not yet available within Keras, it can usually be downloaded from the <a href="https://www.tensorflow.org/hub">TensorFlow Hub</a>). In particular, we’ll use a pretrained <code>EfficientNetB3</code> which takes input images of shape <code>(300, 300, 3)</code>. See <a href="https://arxiv.org/abs/1905.11946">here</a> for the original paper and <a href="https://keras.io/examples/vision/image_classification_efficientnet_fine_tuning/">here</a> for some practical information regarding finetuning EfficientNets.</p>
+<p>A few notes:</p>
+<ul>
+<li>We want to obtain a 3D feature map from the pretrained model that we can combine with a custom classification head. Thus, we set <code>include_top=False</code>.</li>
+<li>Since we want to finetune the model (as opposed to transfer learning), we have to set the <code>trainable</code> flag to <code>True</code>.</li>
+<li>To apply the appropriate preprocessing for the model (e.g., converting the pixel values to a specific range like <code>[0,1]</code> or <code>[-1, 1]</code>), we use a <code>Lambda</code> layer that wraps the <code>preprocess_input</code> function that comes with the model.</li>
+</ul>
+<p>The layers that follow the pretrained model are simple:</p>
+<ul>
+<li><code>GlobalAveragePooling2D</code> averages the values in each channel of the final feature map. Note that this averaging procedure removes positional information that is present in the channels (in classification tasks this usually doesn’t matter; however, it is generally not a good choice in tasks like object detection).</li>
+<li>We include a <code>Dropout</code> layer to reduce overfitting.</li>
+<li>As usual, the final <code>Dense</code> layer, combined with the softmax activation, allows us to obtain the class probabilities.</li>
+</ul>
+<p>To apply the distribution strategy discussed earlier, we have to define the model within a corresponding context manager (<code>with strategy.scope():</code>).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:32.771168Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:32.770370Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:40.726602Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:40.725586Z&quot;}" data-papermill="{&quot;duration&quot;:7.985571,&quot;end_time&quot;:&quot;2023-02-17T18:16:40.729585&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:32.744014&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="23">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> strategy.scope():</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    pretrained_model <span class="op">=</span> tf.keras.applications.EfficientNetB3(weights<span class="op">=</span><span class="st">"imagenet"</span>, include_top<span class="op">=</span><span class="va">False</span>, input_shape<span class="op">=</span>[<span class="dv">300</span>, <span class="dv">300</span>, <span class="dv">3</span>])</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    pretrained_model.trainable <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> tf.keras.Sequential([</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>        tf.keras.layers.InputLayer((<span class="dv">331</span>, <span class="dv">331</span>, <span class="dv">3</span>)),</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>        tf.keras.layers.RandomCrop(height<span class="op">=</span><span class="dv">300</span>, width<span class="op">=</span><span class="dv">300</span>),</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>        tf.keras.layers.Lambda(<span class="kw">lambda</span> data: tf.keras.applications.efficientnet.preprocess_input(tf.cast(data, tf.float32)), input_shape<span class="op">=</span>[<span class="dv">300</span>, <span class="dv">300</span>, <span class="dv">3</span>]),</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>        pretrained_model,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>        tf.keras.layers.GlobalAveragePooling2D(),</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>        tf.keras.layers.Dropout(<span class="fl">0.2</span>),</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>        tf.keras.layers.Dense(<span class="bu">len</span>(CLASSES), name<span class="op">=</span><span class="st">"last_dense"</span>),</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>        tf.keras.layers.Activation(<span class="st">"softmax"</span>, dtype<span class="op">=</span><span class="st">"float32"</span>, name<span class="op">=</span><span class="st">"predictions"</span>)</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    ])</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>model.<span class="bu">compile</span>(</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>    optimizer<span class="op">=</span><span class="st">'adam'</span>,</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> <span class="st">'categorical_crossentropy'</span>,</span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>    metrics<span class="op">=</span>[<span class="st">'accuracy'</span>],</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>model.summary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Downloading data from https://storage.googleapis.com/keras-applications/efficientnetb3_notop.h5
+43941888/43941136 [==============================] - 0s 0us/step
+43950080/43941136 [==============================] - 0s 0us/step
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+random_crop (RandomCrop)     (None, 300, 300, 3)       0         
+_________________________________________________________________
+lambda (Lambda)              (None, 300, 300, 3)       0         
+_________________________________________________________________
+efficientnetb3 (Functional)  (None, 10, 10, 1536)      10783535  
+_________________________________________________________________
+global_average_pooling2d (Gl (None, 1536)              0         
+_________________________________________________________________
+dropout (Dropout)            (None, 1536)              0         
+_________________________________________________________________
+last_dense (Dense)           (None, 104)               159848    
+_________________________________________________________________
+predictions (Activation)     (None, 104)               0         
+=================================================================
+Total params: 10,943,383
+Trainable params: 10,856,080
+Non-trainable params: 87,303
+_________________________________________________________________</code></pre>
+</div>
+</div>
+</section>
+<section id="learning-rate-schedule" class="level3">
+<h3 class="anchored" data-anchor-id="learning-rate-schedule">Learning rate schedule</h3>
+<p>It can be tricky to find a learning rate that works well in a finetuning task. Let’s try the following learning schedule that combines warm-up period and an exponential decay. The implementation below is an example:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:40.881143Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:40.880279Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:41.152268Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:41.145699Z&quot;}" data-papermill="{&quot;duration&quot;:0.302143,&quot;end_time&quot;:&quot;2023-02-17T18:16:41.156040&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:40.853897&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="24">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>EPOCHS <span class="op">=</span> <span class="dv">13</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>start_lr <span class="op">=</span> <span class="fl">0.0001</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>min_lr <span class="op">=</span> <span class="fl">0.0001</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>max_lr <span class="op">=</span> <span class="fl">0.0002</span> <span class="op">*</span> strategy.num_replicas_in_sync</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>rampup_epochs <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>sustain_epochs <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>exp_decay <span class="op">=</span> <span class="fl">0.75</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lrfn(epoch):</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> epoch <span class="op">&lt;</span> rampup_epochs:</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (max_lr <span class="op">-</span> start_lr)<span class="op">/</span>rampup_epochs <span class="op">*</span> epoch <span class="op">+</span> start_lr</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> epoch <span class="op">&lt;</span> rampup_epochs <span class="op">+</span> sustain_epochs:</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> max_lr</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (max_lr <span class="op">-</span> min_lr) <span class="op">*</span> exp_decay<span class="op">**</span>(epoch<span class="op">-</span>rampup_epochs<span class="op">-</span>sustain_epochs) <span class="op">+</span> min_lr</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>lr_callback <span class="op">=</span> tf.keras.callbacks.LearningRateScheduler(<span class="kw">lambda</span> epoch: lrfn(epoch), verbose<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>rang <span class="op">=</span> np.arange(EPOCHS)</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> [lrfn(x) <span class="cf">for</span> x <span class="kw">in</span> rang]</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>plt.plot(rang, y)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-24-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Another option that can work very well is using differential learning rates (i.e., different learning rates for different layers of the model). Intuitively, we’ll want low learning rates for the pretrained layers and a normal learning rate for the layers of our custom classification head. Note that differential learning rates can be combined with a learning rate scheduler.</p>
+</section>
+<section id="fitting-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="fitting-the-model">Fitting the model</h3>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:41.411701Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:41.411359Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:16:41.417355Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:16:41.416184Z&quot;}" data-papermill="{&quot;duration&quot;:0.04815,&quot;end_time&quot;:&quot;2023-02-17T18:16:41.420613&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:41.372463&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="25">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>STEPS_PER_EPOCH <span class="op">=</span> num_training_images <span class="op">//</span> BATCH_SIZE</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>VALIDATION_STEPS <span class="op">=</span> <span class="op">-</span>(<span class="op">-</span>num_validation_images <span class="op">//</span> BATCH_SIZE)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:16:41.497272Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:16:41.496939Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:55:15.830657Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:55:15.829667Z&quot;}" data-papermill="{&quot;duration&quot;:2314.376326,&quot;end_time&quot;:&quot;2023-02-17T18:55:15.834137&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:16:41.457811&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="26">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>history <span class="op">=</span> model.fit(train_dataset, </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                    steps_per_epoch<span class="op">=</span>STEPS_PER_EPOCH, </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                    epochs<span class="op">=</span>EPOCHS,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                    validation_data<span class="op">=</span>valid_dataset, </span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                    validation_steps<span class="op">=</span>VALIDATION_STEPS,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>                    callbacks<span class="op">=</span>[lr_callback])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:55:16.360928Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:55:16.360594Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:55:16.370037Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:55:16.369148Z&quot;}" data-papermill="{&quot;duration&quot;:0.27281,&quot;end_time&quot;:&quot;2023-02-17T18:55:16.373310&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:55:16.100500&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="27">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> display_training_curves(training, validation, title, subplot):</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> subplot <span class="op">%</span> <span class="dv">10</span> <span class="op">==</span> <span class="dv">1</span>:</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">10</span>), facecolor<span class="op">=</span><span class="st">'#F0F0F0'</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(subplot)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    ax.set_facecolor(<span class="st">'#F8F8F8'</span>)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    ax.plot(training)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    ax.plot(validation)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">'model '</span><span class="op">+</span> title)</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(title)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">'epoch'</span>)</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    ax.legend([<span class="st">'train'</span>, <span class="st">'valid.'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:55:16.748680Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:55:16.748344Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:55:17.186263Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:55:17.185419Z&quot;}" data-papermill="{&quot;duration&quot;:0.601972,&quot;end_time&quot;:&quot;2023-02-17T18:55:17.188410&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:55:16.586438&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="28">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>display_training_curves(history.history[<span class="st">'loss'</span>], history.history[<span class="st">'val_loss'</span>], <span class="st">'loss'</span>, <span class="dv">211</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>display_training_curves(history.history[<span class="st">'accuracy'</span>], history.history[<span class="st">'val_accuracy'</span>], <span class="st">'accuracy'</span>, <span class="dv">212</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-28-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:55:17.545095Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:55:17.544834Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:20.848459Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:20.847533Z&quot;}" data-papermill="{&quot;duration&quot;:63.475295,&quot;end_time&quot;:&quot;2023-02-17T18:56:20.851244&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:55:17.375949&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="29">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>os.mkdir(<span class="st">"export"</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>model.save(<span class="st">"export/effnetb3_flowers_01"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="visual-checks" class="level3">
+<h3 class="anchored" data-anchor-id="visual-checks">Visual checks</h3>
+<p>Let’s have a look at some predictions on the validation data.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:21.838470Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:21.838190Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:21.908570Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:21.907650Z&quot;}" data-papermill="{&quot;duration&quot;:0.252344,&quot;end_time&quot;:&quot;2023-02-17T18:56:21.911047&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:21.658703&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="30">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>valid_dataset <span class="op">=</span> get_validation_dataset()</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>valid_dataset <span class="op">=</span> valid_dataset.unbatch().batch(<span class="dv">9</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>batch <span class="op">=</span> <span class="bu">iter</span>(valid_dataset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:22.227198Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:22.225478Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:28.728565Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:28.727566Z&quot;}" data-papermill="{&quot;duration&quot;:6.664223,&quot;end_time&quot;:&quot;2023-02-17T18:56:28.731142&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:22.066919&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="31">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>imgs, lbls <span class="op">=</span> <span class="bu">next</span>(batch)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> model.predict(tf.cast(imgs, tf.float32))</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> np.argmax(probs, axis<span class="op">=-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:29.114059Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:29.112340Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:29.121635Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:29.120787Z&quot;}" data-papermill="{&quot;duration&quot;:0.229539,&quot;end_time&quot;:&quot;2023-02-17T18:56:29.123876&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:28.894337&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="32">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> display_predictions(images, oh_labels, preds, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">10</span>), fontsize<span class="op">=</span><span class="dv">13</span>, axis_off<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    plt.figure(figsize<span class="op">=</span>figsize)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">9</span>):</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>        ax <span class="op">=</span> plt.subplot(<span class="dv">3</span>, <span class="dv">3</span>, i<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>        plt.imshow(images[i])</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> oh_labels <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>            label_idx <span class="op">=</span> np.argmax(oh_labels[i])</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>            label <span class="op">=</span> np.array(CLASSES)[label_idx]</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>            pred <span class="op">=</span> np.array(CLASSES)[preds[i]]</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>            title <span class="op">=</span> <span class="ss">f"Correct: </span><span class="sc">{</span>label<span class="sc">}</span><span class="ch">\n</span><span class="ss">Predicted: </span><span class="sc">{</span>pred<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>            color <span class="op">=</span> <span class="st">"red"</span> <span class="cf">if</span> label <span class="op">!=</span> pred <span class="cf">else</span> <span class="st">"black"</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>            plt.title(title, fontsize<span class="op">=</span>fontsize, color<span class="op">=</span>color)</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> axis_off:</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>            plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:29.449687Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:29.449105Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:30.312539Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:30.311710Z&quot;}" data-papermill="{&quot;duration&quot;:1.04236,&quot;end_time&quot;:&quot;2023-02-17T18:56:30.323497&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:29.281137&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="33">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>display_predictions(imgs, lbls, preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-33-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Additionally, we can also plot the corresponding confusion matrix:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:31.016532Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:31.016226Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:52.615507Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:52.614246Z&quot;}" data-papermill="{&quot;duration&quot;:21.781773,&quot;end_time&quot;:&quot;2023-02-17T18:56:52.623584&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:30.841811&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="34">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>cm_dataset <span class="op">=</span> get_validation_dataset() </span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>img_dataset <span class="op">=</span> cm_dataset.<span class="bu">map</span>(<span class="kw">lambda</span> image, label: image)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>lbl_dataset <span class="op">=</span> cm_dataset.<span class="bu">map</span>(<span class="kw">lambda</span> image, label: label).unbatch()</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>cm_correct_lbls <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(lbl_dataset.batch(num_validation_images))).numpy()</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>cm_correct_lbls <span class="op">=</span> np.argmax(cm_correct_lbls, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>cm_probs <span class="op">=</span> model.predict(img_dataset, steps<span class="op">=</span>VALIDATION_STEPS)</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>cm_preds <span class="op">=</span> np.argmax(cm_probs, axis<span class="op">=-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:52.968317Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:52.968032Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:52.982464Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:52.981519Z&quot;}" data-papermill="{&quot;duration&quot;:0.188288,&quot;end_time&quot;:&quot;2023-02-17T18:56:52.984874&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:52.796586&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="35">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>cmat <span class="op">=</span> confusion_matrix(cm_correct_lbls, cm_preds, labels<span class="op">=</span><span class="bu">range</span>(<span class="bu">len</span>(CLASSES)))</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>cmat <span class="op">=</span> (cmat.T <span class="op">/</span> cmat.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)).T</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:53.336472Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:53.334410Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:57.545522Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:57.544712Z&quot;}" data-papermill="{&quot;duration&quot;:4.387963,&quot;end_time&quot;:&quot;2023-02-17T18:56:57.547666&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:53.159703&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="36">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">14</span>))</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>ax.matshow(cmat, cmap<span class="op">=</span><span class="st">"Blues"</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(<span class="bu">range</span>(<span class="bu">len</span>(CLASSES)))</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels(CLASSES, fontdict<span class="op">=</span>{<span class="st">'fontsize'</span>: <span class="dv">6</span>}, rotation<span class="op">=</span><span class="dv">45</span>, ha<span class="op">=</span><span class="st">"left"</span>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>ax.set_yticks(<span class="bu">range</span>(<span class="bu">len</span>(CLASSES)))</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>ax.set_yticklabels(CLASSES, fontdict<span class="op">=</span>{<span class="st">'fontsize'</span>: <span class="dv">6</span>}, rotation<span class="op">=</span><span class="dv">45</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-36-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:58.003532Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:58.003190Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:58.026107Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:58.024984Z&quot;}" data-papermill="{&quot;duration&quot;:0.215553,&quot;end_time&quot;:&quot;2023-02-17T18:56:58.028399&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:57.812846&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="37">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>score <span class="op">=</span> f1_score(cm_correct_lbls, cm_preds, labels<span class="op">=</span><span class="bu">range</span>(<span class="bu">len</span>(CLASSES)), average<span class="op">=</span><span class="st">'macro'</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>precision <span class="op">=</span> precision_score(cm_correct_lbls, cm_preds, labels<span class="op">=</span><span class="bu">range</span>(<span class="bu">len</span>(CLASSES)), average<span class="op">=</span><span class="st">'macro'</span>)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>recall <span class="op">=</span> recall_score(cm_correct_lbls, cm_preds, labels<span class="op">=</span><span class="bu">range</span>(<span class="bu">len</span>(CLASSES)), average<span class="op">=</span><span class="st">'macro'</span>)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"F1 score:</span><span class="ch">\t</span><span class="sc">{</span>score<span class="sc">:.3f}</span><span class="ch">\n</span><span class="ss">Precision:</span><span class="ch">\t</span><span class="sc">{</span>precision<span class="sc">:.3f}</span><span class="ch">\n</span><span class="ss">Recall:</span><span class="ch">\t\t</span><span class="sc">{</span>recall<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>F1 score:   0.941
+Precision:  0.953
+Recall:     0.936</code></pre>
+</div>
+</div>
+</section>
+<section id="prediction" class="level3">
+<h3 class="anchored" data-anchor-id="prediction">Prediction</h3>
+<p>As a final step, we want to obtain the model’s predictions on the test set.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:59.290776Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:59.290122Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:59.307981Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:59.307121Z&quot;}" data-papermill="{&quot;duration&quot;:0.192431,&quot;end_time&quot;:&quot;2023-02-17T18:56:59.310154&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:59.117723&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="38">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>TEST_FILENAMES <span class="op">=</span> tf.io.gfile.glob(DATA_DIR <span class="op">+</span> <span class="st">'/test/*.tfrec'</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>num_test_images <span class="op">=</span> count_data_items(TEST_FILENAMES)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>TEST_STEPS <span class="op">=</span> <span class="op">-</span>(<span class="op">-</span>num_test_images <span class="op">//</span> BATCH_SIZE) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:56:59.665416Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:56:59.665151Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:56:59.671960Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:56:59.670945Z&quot;}" data-papermill="{&quot;duration&quot;:0.183037,&quot;end_time&quot;:&quot;2023-02-17T18:56:59.673985&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:59.490948&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="39">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> parse_tfrecord_test(example):</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    features <span class="op">=</span> {</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"image"</span>: tf.io.FixedLenFeature([], tf.string),</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"id"</span>: tf.io.FixedLenFeature([], tf.string),</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    example <span class="op">=</span> tf.io.parse_single_example(example, features)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    image <span class="op">=</span> tf.image.decode_jpeg(example[<span class="st">'image'</span>], channels<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    image <span class="op">=</span> tf.reshape(image, [<span class="op">*</span>IMAGE_SIZE, <span class="dv">3</span>])</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>    idnum <span class="op">=</span> example[<span class="st">"id"</span>]</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> image, idnum</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_test_dataset():</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>    dataset <span class="op">=</span> (</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>        tf.data.TFRecordDataset(TEST_FILENAMES, num_parallel_reads<span class="op">=</span>AUTO)</span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">map</span>(parse_tfrecord_test, num_parallel_calls<span class="op">=</span>AUTO)</span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>        .batch(BATCH_SIZE)</span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>        .prefetch(AUTO)</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-02-17T18:57:00.039166Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-02-17T18:57:00.038895Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-02-17T18:57:25.532491Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-02-17T18:57:25.531535Z&quot;}" data-papermill="{&quot;duration&quot;:25.677902,&quot;end_time&quot;:&quot;2023-02-17T18:57:25.535006&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2023-02-17T18:56:59.857104&quot;,&quot;status&quot;:&quot;completed&quot;}" data-tags="[]" data-execution_count="40">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>test_dataset <span class="op">=</span> get_test_dataset()</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>test_img_dataset <span class="op">=</span> test_dataset.<span class="bu">map</span>(<span class="kw">lambda</span> img, idn: img)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>test_ids_dataset <span class="op">=</span> test_dataset.<span class="bu">map</span>(<span class="kw">lambda</span> img, idn: idn).unbatch()</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>test_ids <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(test_ids_dataset.batch(num_test_images))).numpy().astype(<span class="st">"U"</span>)</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> model.predict(test_img_dataset, steps<span class="op">=</span>TEST_STEPS)</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> np.argmax(probs, axis<span class="op">=-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

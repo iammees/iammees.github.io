@@ -2,22 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://iammees.github.io/posts/conformal_mapie/index.html</loc>
-    <lastmod>2023-04-12T09:14:19.023Z</lastmod>
+    <lastmod>2023-04-12T09:21:09.726Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_intro/index.html</loc>
-    <lastmod>2023-04-12T09:14:19.740Z</lastmod>
+    <lastmod>2023-04-12T09:21:10.436Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/covid19_mortality/index.html</loc>
-    <lastmod>2023-04-12T09:14:22.420Z</lastmod>
+    <lastmod>2023-04-12T09:21:13.063Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_sentiment/index.html</loc>
-    <lastmod>2023-04-12T09:14:23.208Z</lastmod>
+    <lastmod>2023-04-12T09:21:13.871Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iammees.github.io/posts/image_classification_keras/index.html</loc>
+    <lastmod>2023-04-12T09:21:14.890Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/index.html</loc>
-    <lastmod>2023-04-12T09:14:23.744Z</lastmod>
+    <lastmod>2023-04-12T09:21:15.489Z</lastmod>
   </url>
 </urlset>
