@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-10-27">
+
+<title>iammees - Tackling Tabular Problems I: Exploratory Data Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Tackling Tabular Problems I: Exploratory Data Analysis</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">October 27, 2022</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<section id="exploratory-data-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
+<p>Given a dataset, the first step with every new problem is exploratory data analysis (EDA). Initially, we’ll just want to get a good general understanding of the data (using descriptive statistics, histograms, searching for duplicates, etc.). Ideally, we’ll recognize peculiarities of the data that warrant further exploration and ultimately lead to finding good features. There are specific issues, however, that usually require special attention:</p>
+<ul>
+<li><strong>Missing values</strong>: Missing values are a common issue. Assuming that there is enough data to work with, the most important question is how missingness is related to the target. Imagine that we want to predict whether a machine is going to fail, for example. It may turn out that missing values for one particular sensor are associated with a higher failure rate of the machine (maybe some downstream process relies on the sensor data or a problem with an upstream process causes the value to exceed the sensor’s measurement range; in any case, this would require further investigation). Thus, imputation should never be the first step when dealing with missing data (more on this later).</li>
+<li><strong>Outliers</strong>: Analyzing outliers often can be challenging. After all it requires domain knowledge to determine whether a particular observation really has occurred, whether it should be treated in some way or even can be safely ignored. Finding outliers also isn’t confined to the univariate case. Looking for rare combinations of variables can reveal further interesting patterns (e.g., it may be very uncommon for two features to be very high at the same time and this tells us something about the target).</li>
+<li><strong>Skewed numerical variables</strong>: Analyze the data to identify variables that may require a transformation. Ultimately, transforming variables can be a question of interpretability or feature engineering (i.e., which transformation improves the performance of the model), or it can be dictated by the model.</li>
+<li><strong>Model validation</strong>: Setting up a robust validation scheme requires a thorough understanding of the data. It is advantageous to already have model validation in mind when exploring the data (i.e., watch out for issues like groups in the data that need to be addressed by the validation scheme).</li>
+<li><strong>Feature engineering</strong>: Many ideas for feature engineering will arise while exploring the data. Which features will help us predict the target? Which features should be combined? Which features are redundant? Which features only represent noise? It is beneficial to take note of these findings (and, even more importantly, the intuition behind them) and investigate them further.</li>
+</ul>
+<p>There are many methods to gather relevant insights. Let’s quickly go through the most common ones:</p>
+<ul>
+<li>Descriptive statistics and histograms for single variables (using an automatic tool like <a href="https://pandas-profiling.ydata.ai/docs/master/pages/getting_started/overview.html">pandas-profiling</a> for this purpose can be very time-efficient).</li>
+<li>Scatterplots, box plots, bar charts, etc. for visualizing two or three variables together. Visualize a third variable (often the target) using color (e.g., in scatterplots) or by varying another property of the plot (e.g., the width of the bars in bar charts).</li>
+<li>Dimensionality reduction: <a href="https://distill.pub/2016/misread-tsne/">t-SNE</a> and <a href="https://pair-code.github.io/understanding-umap/">UMAP</a> are two great techniques for reducing the dimensionality of the data, potentially revealing clusters and outliers (note that getting the most out of both algorithms can be somewhat challenging; see the provided links for more on this). Using the implementations in <a href="https://github.com/rapidsai/cuml">cuml</a> for GPU acceleration is recommended for time-efficiency.</li>
+</ul>
+</section>
+<section id="example-rocket-league" class="level2">
+<h2 class="anchored" data-anchor-id="example-rocket-league">Example: Rocket League</h2>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T07:31:31.496941Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T07:31:31.496239Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T07:31:32.259970Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T07:31:32.258989Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T07:31:31.496898Z&quot;}" data-trusted="true" data-execution_count="2">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.patches <span class="im">as</span> patches</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.lines <span class="im">import</span> Line2D</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> imageio.v2 <span class="im">as</span> imageio</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gc</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>As an example for this series about tabular problems, we’ll use a custom subset of a <a href="https://www.kaggle.com/competitions/tabular-playground-series-oct-2022/data">dataset</a> containing snapshots of professional Rocket League matches. (<a href="https://en.wikipedia.org/wiki/Rocket_League">Rocket League</a> is a video game where two teams use rocket-powered vehicles to play soccer.) I’ve picked this dataset because it is quite intuitive, can be visualized nicely, requires attention when setting up the validation scheme, and offers vast possibilities for feature engineering. If you, like me, have never heard of Rocket League, that’s not a problem – there is a huge amount of recorded gameplay on YouTube, if you are curious. Our goal will be to predict, based on a <em>single</em> snapshot of a game, the probability that team A will score within the next 10 seconds.</p>
+<p>Let’s get a quick overview of the available features: - <code>game_num</code>: unique identifier for the game from which the event was taken - <code>event_id</code>: unique identifier for the sequence of consecutive frames - <code>event_time</code>: time in seconds before the event ended, either by a goal being scored or by truncation if a goal wasn’t scored; only in train - <code>team_A_scoring_within_10sec</code>: the target column; <code>1</code> if the team scores in the next 10 seconds of the game, <code>0</code> otherwise - <code>team_B_scoring_within_10sec</code>: only in train - Ball: - <code>ball_pos_[xyz]</code>: position of the ball as a 3d vector - <code>ball_vel_[xyz]</code>: velocity of the ball as a 3d vector - Players: - <code>p{i}_pos_[xyz]</code>: position of player <span class="math inline">\(i\)</span> as a 3d vector - <code>p{i}_vel_[xyz]</code>: velocity of player <span class="math inline">\(i\)</span> as a 3d vector - <code>p{i}_boost</code>: remaining boost of player <span class="math inline">\(i\)</span> - Note: All columns related to a specific player will be <code>NaN</code> if the player has been demolished and hasn’t respawned yet. Team <code>A</code> consists of players 0, 1, and 2; Team <code>B</code> consists of player 3, 4, and 5. - Boost: - <code>boost{i}_timer</code>: time in seconds until big boost orb i respawns, <code>0</code> if it is available</p>
+<p>Let’s see what EDA can reveal about the dataset.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:21:55.351987Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:21:55.351562Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:21:55.357494Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:21:55.356510Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:21:55.351953Z&quot;}" data-trusted="true" data-execution_count="41">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data_path <span class="op">=</span> Path(<span class="st">"/kaggle/input/rocket-league-ds/train.feather"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:21:58.395602Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:21:58.394280Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:22:02.496735Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:22:02.495477Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:21:58.395538Z&quot;}" data-trusted="true" data-execution_count="42">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_feather(data_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="games-and-events" class="level3">
+<h3 class="anchored" data-anchor-id="games-and-events">Games and events</h3>
+<p>The dataset contains data for 5865 games and 24295 unique events. On average, there are more than four events per game. Per event we have between 1 and over 1,291 observations.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:22:07.085328Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:22:07.084880Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:22:07.622119Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:22:07.620784Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:22:07.085290Z&quot;}" data-trusted="true" data-execution_count="43">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Number of games:"</span>, df.game_num.unique().shape[<span class="dv">0</span>])</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Number of events:"</span>, df.event_id.unique().shape[<span class="dv">0</span>])</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Events per game:</span><span class="ch">\n</span><span class="st">"</span>, df.groupby(<span class="st">"game_num"</span>).event_id.unique().agg(<span class="bu">len</span>).agg([<span class="st">"min"</span>, <span class="st">"max"</span>, <span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"std"</span>]))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Observations per event:</span><span class="ch">\n</span><span class="st">"</span>, df.groupby(<span class="st">"event_id"</span>).size().agg([<span class="st">"min"</span>, <span class="st">"max"</span>, <span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"std"</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of games: 5865
+Number of events: 24295
+
+Events per game:
+ min        1.000000
+max       11.000000
+mean       4.142370
+median     4.000000
+std        1.687877
+Name: event_id, dtype: float64
+
+Observations per event:
+ min          1.000000
+max       1291.000000
+mean        98.599136
+median      71.000000
+std         89.669409
+dtype: float64</code></pre>
+</div>
+</div>
+<p>In general, though, very long events are the exception:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:22:14.497786Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:22:14.497348Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:22:14.910960Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:22:14.909754Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:22:14.497748Z&quot;}" data-trusted="true" data-execution_count="44">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df.groupby(<span class="st">"event_id"</span>).size().plot.hist(bins<span class="op">=</span><span class="dv">80</span>, figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">3</span>))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-6-output-1.png" class="quarto-discovered-preview-image img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="ball-position" class="level3">
+<h3 class="anchored" data-anchor-id="ball-position">Ball position</h3>
+<p>The position of the ball’s center point is provided with <code>x</code>, <code>y</code>, and <code>z</code> coordinates in the <code>ball_pos_[xyz]</code> features. The histograms below show the following: - The pitch is around <code>160</code> units wide, <code>200</code> units long, and <code>40</code> units high. - All dimensions are centered, which means that the point <code>[0, 0 ,0]</code> is where the kick-off happens (i.e.&nbsp;where each game begins and resumes after a goal). - The most common ball positions for all dimensions are <code>0</code>. This is not surprising because all events in the dataset begin with a kick-off. - For the <code>x</code> dimension, values at the sides of the pitch appear more often. - For the <code>y</code> dimension, the histogram shows that the gameplay is somewhat orientated towards the goals. The rather small values at either side probably reflect that the ball was in the respective goal. - For the <code>z</code> dimension, we can see that higher values appear increasingly less frequently. Still, the ball is quite often flying in the air.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:22:19.673996Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:22:19.673594Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:22:20.931563Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:22:20.930016Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:22:19.673962Z&quot;}" data-trusted="true" data-execution_count="45">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Ball positions (min/max):"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> coord <span class="kw">in</span> [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]:</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    mi, ma <span class="op">=</span> df[<span class="ss">f"ball_pos_</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss">"</span>].<span class="bu">min</span>(), df[<span class="ss">f"ball_pos_</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss">"</span>].<span class="bu">max</span>()</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss"> coordinate: min = </span><span class="sc">{</span>mi<span class="sc">:.3f}</span><span class="ch">\t</span><span class="ss"> max = </span><span class="sc">{</span>ma<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">3</span>))</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f <span class="kw">in</span> <span class="bu">zip</span>(axs.ravel(), [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    ax.hist(df[<span class="ss">f"ball_pos_</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">"</span>], bins<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(f, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Ball positions (min/max):
+x coordinate: min = -80.600  max = 80.663
+y coordinate: min = -104.309     max = 104.308
+z coordinate: min = 1.142    max = 39.428</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-7-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<section id="size-of-the-pitch-and-position-of-the-goals" class="level4">
+<h4 class="anchored" data-anchor-id="size-of-the-pitch-and-position-of-the-goals">Size of the pitch and position of the goals</h4>
+<p>Let’s focus on observations where the ball is inside the goal.</p>
+<p>We can see that: - the goals are centered at <code>x=0</code> on either side of the pitch - the goal lines are at <code>y=-100</code> and <code>y=100</code>, respectively - the goals are around <code>35</code> units wide and <code>12</code> units high - if a goal is scored: - the <code>x</code> position of the ball when crossing the goal line is essentially uniformly distributed - the ball sometimes just barely crosses the goal line (see the two small bars of the histogram for the <code>y</code> dimension) - most goals are scored with the ball rolling on the pitch (or flying very low), otherwise the <code>z</code> dimension is quite uniformly distributed</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:22:44.699104Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:22:44.698660Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:22:45.811297Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:22:45.810105Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:22:44.699065Z&quot;}" data-trusted="true" data-execution_count="46">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="op">=</span> df.loc[df.ball_pos_y.<span class="bu">abs</span>() <span class="op">&gt;</span> <span class="dv">102</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> coord <span class="kw">in</span> [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]:</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    abs_ <span class="op">=</span> tmp[<span class="ss">f"ball_pos_</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss">"</span>].<span class="bu">abs</span>()</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    mi, ma <span class="op">=</span> abs_.<span class="bu">min</span>(), abs_.<span class="bu">max</span>()</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss"> coordinate: min = </span><span class="sc">{</span>mi<span class="sc">:.3f}</span><span class="ch">\t</span><span class="ss"> max = </span><span class="sc">{</span>ma<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">3</span>))</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f <span class="kw">in</span> <span class="bu">zip</span>(axs.ravel(), [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    ax.hist(tmp[<span class="ss">f"ball_pos_</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">"</span>], bins<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(f, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>x coordinate: min = 0.001    max = 16.379
+y coordinate: min = 102.001  max = 104.309
+z coordinate: min = 1.606    max = 11.085</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-8-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>We can also simply plot all ball positions in the dataset. Apart from seeing the goals, this allows us to notice the indented shape of the corners of the pitch:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:22:51.983305Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:22:51.982870Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:22:53.525464Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:22:53.524200Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:22:51.983267Z&quot;}" data-trusted="true" data-execution_count="47">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">3</span>, <span class="fl">4.5</span>))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>subset <span class="op">=</span> df.sample(n<span class="op">=</span><span class="bu">int</span>(<span class="fl">1e6</span>), random_state<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>ax.scatter(subset.ball_pos_x, subset.ball_pos_y, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.01</span>, color<span class="op">=</span><span class="st">"black"</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-9-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="ball-position-and-goal-scoring" class="level4">
+<h4 class="anchored" data-anchor-id="ball-position-and-goal-scoring">Ball position and goal scoring</h4>
+<p>It seems natural that the position of the ball is related to our target. Let’s plot the ball positions (the <code>x</code> and <code>y</code> dimension for now) depending on the outcome. There are a few things to notice: - If either team scores in the next ten seconds, the ball unsurprisingly tends to be in the half of the defending team, particularly in front of the goal. - It seems to be common that a goal is scored in the 10 seconds after kick-off (since we can clearly see the center spot in the scatterplots).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:23:08.756231Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:23:08.755848Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:23:15.381676Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:23:15.380456Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:23:08.756199Z&quot;}" data-trusted="true" data-execution_count="48">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>team_A_scores <span class="op">=</span> df[df.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>team_B_scores <span class="op">=</span> df[df.team_B_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>no_goal <span class="op">=</span> df[(df.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">0</span>) <span class="op">&amp;</span> (df.team_B_scoring_within_10sec <span class="op">==</span> <span class="dv">0</span>)]</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>no_goal <span class="op">=</span> no_goal.sample(n<span class="op">=</span><span class="bu">int</span>(<span class="fl">1e6</span>), random_state<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].scatter(team_A_scores.ball_pos_x, team_A_scores.ball_pos_y, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_title(<span class="st">"When team A scores in the next 10 secs"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].scatter(team_B_scores.ball_pos_x, team_B_scores.ball_pos_y, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_title(<span class="st">"When team B scores in the next 10 secs"</span>)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].scatter(no_goal.ball_pos_x, no_goal.ball_pos_y, s<span class="op">=</span><span class="fl">0.01</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, color<span class="op">=</span><span class="st">"#818182"</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_title(<span class="st">"When no team scores in the next 10 secs"</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-10-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Now it might be interesting to what changes when we alter the time until the goal is scored. Let’s plot the same scatterplots for the intervals <code>[7, 6]</code>, <code>[5, 4]</code>, <code>[3, 2]</code>, <code>[2, 1]</code>, and <code>[1, 0.1]</code>.</p>
+<p>What can we learn from the plots?</p>
+<p>While there are no obvious patterns in earlier time steps (when the gameplay appears to be quite spread out all over the pitch), the game usually begins to shift to the half of the defending team at around 5 seconds before a goal. Then it gets further condensed as time progresses. 2 to 1 seconds before a goal, the gameplay is typically thoroughly concentrated in the half of the defending team, particularly in its center as well as directly in front of the goal. This continues until the very last time steps when the ball generally is directly in front of or already partly in the goal.</p>
+<p>When we focus on the center spot, we can see that some goals are scored only 7 to 5 seconds after kick-off. This holds true (though to a lesser extent) for the <code>[5, 4]</code> and even the <code>[3, 2]</code> interval. Afterwards the center spot vanishes in the scatterplots, meaning that goals in less than 2 seconds after kick-off are very rare.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:35:48.609647Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:35:48.609196Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:35:49.644255Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:35:49.642727Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:35:48.609606Z&quot;}" data-trusted="true" data-execution_count="72">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">4</span>), sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    axs[col].scatter(tmp.ball_pos_x, tmp.ball_pos_y, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    axs[col].set_title(<span class="ss">f"Goal scored in the next </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">0</span>])<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">1</span>])<span class="sc">}</span><span class="ss"> secs"</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-11-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>What about the <code>z</code> dimension? Let’s plot <code>y</code> against <code>z</code>. What is somewhat surprising is that some goals appear to be scored from a nearly vertical angle.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:35:57.299782Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:35:57.299337Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:35:58.418391Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:35:58.417266Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:35:57.299743Z&quot;}" data-trusted="true" data-execution_count="73">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">4</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    axs[col].scatter(tmp.ball_pos_y, tmp.ball_pos_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    axs[col].set_title(<span class="ss">f"Goal scored in the next </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">0</span>])<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">1</span>])<span class="sc">}</span><span class="ss"> secs"</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-12-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Finally, let’s plot <code>x</code> against <code>z</code>:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:36:03.399835Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:36:03.399154Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:36:04.641746Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:36:04.640465Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:36:03.399781Z&quot;}" data-trusted="true" data-execution_count="74">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">4</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    axs[col].scatter(tmp.ball_pos_x, tmp.ball_pos_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    axs[col].set_title(<span class="ss">f"Goal scored in the next </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">0</span>])<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">1</span>])<span class="sc">}</span><span class="ss"> secs"</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-13-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="ball-velocity" class="level3">
+<h3 class="anchored" data-anchor-id="ball-velocity">Ball velocity</h3>
+<p>The velocity of the ball is provided as a 3d vector by the <code>ball_vel_[xyz]</code> features. The histograms for each dimension don’t contain any big surprises (the maxima at <code>0</code> are due to the kick-off), only the two local maxima of the <code>y</code> dimension are striking.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:36:12.932920Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:36:12.932495Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:36:17.213141Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:36:17.212009Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:36:12.932883Z&quot;}" data-trusted="true" data-execution_count="75">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">3</span>))</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f <span class="kw">in</span> <span class="bu">zip</span>(axs.ravel(), [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    ax.hist(df[<span class="ss">f"ball_vel_</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">"</span>], bins<span class="op">=</span><span class="dv">100</span>, color<span class="op">=</span><span class="st">"#400170"</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(f, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">5</span>))</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>tmp <span class="op">=</span> df.sample(n<span class="op">=</span><span class="bu">int</span>(<span class="fl">1e6</span>), random_state<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].scatter(tmp.ball_vel_x, tmp.ball_vel_y, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.01</span>, color<span class="op">=</span><span class="st">"#400170"</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlabel(<span class="st">"x"</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_ylabel(<span class="st">"y"</span>)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].scatter(tmp.ball_vel_x, tmp.ball_vel_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.01</span>, color<span class="op">=</span><span class="st">"#400170"</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlabel(<span class="st">"x"</span>)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_ylabel(<span class="st">"z"</span>)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].scatter(tmp.ball_vel_y, tmp.ball_vel_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.01</span>, color<span class="op">=</span><span class="st">"#400170"</span>)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlabel(<span class="st">"y"</span>)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_ylabel(<span class="st">"z"</span>)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-14-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-14-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<section id="ball-velocity-and-goal-scoring" class="level4">
+<h4 class="anchored" data-anchor-id="ball-velocity-and-goal-scoring">Ball velocity and goal scoring</h4>
+<p>Is there a relationship between the velocity of the ball and the scoring of a goal? Let’s see. We’ll plot scatterplots of all three dimensions of the velocity vector for different time intervals (the <code>y</code> axis of the plot shows the interval mean) before a goal.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:36:23.181364Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:36:23.180055Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:36:24.787445Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:36:24.786106Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:36:23.181305Z&quot;}" data-trusted="true" data-execution_count="76">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">4</span>), sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, c <span class="kw">in</span> <span class="bu">enumerate</span>([<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    axs[col].set_xlabel(<span class="ss">f"</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss"> velocity"</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    axs[col].axvline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"black"</span>, lw<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> interval <span class="kw">in</span> intervals:</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>        tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> <span class="bu">abs</span>(interval[<span class="dv">0</span>] <span class="op">+</span> interval[<span class="dv">1</span>])<span class="op">/</span><span class="dv">2</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        axs[col].scatter(tmp[<span class="ss">f"ball_vel_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span>], np.repeat(m, tmp.shape[<span class="dv">0</span>]), s<span class="op">=</span><span class="fl">7.5</span>, alpha<span class="op">=</span><span class="fl">.005</span>, color<span class="op">=</span><span class="st">"#400170"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<ul>
+<li>The <code>x</code> values are centered with no extreme values in either direction (this is not surprising given the position of the goal).</li>
+<li>The <code>y</code> values are increasingly shifted to positive values. Since we are looking at team <code>A</code> (which attacks in the direction of positive <code>y</code> values), this not surprising, too. With only a few seconds left before the goal, there are a quite lot samples with negative <code>y</code> velocities, though.</li>
+<li>The <code>z</code> values narrow the closer we get to the goal and get somewhat shifted in the negative direction. Given that goals can be scored from flying cars, this is to be expected, but still interesting.</li>
+</ul>
+<p>Finally we can plot the dimensions against each other.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:36:27.222039Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:36:27.221633Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:36:29.399755Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:36:29.398746Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:36:27.222005Z&quot;}" data-trusted="true" data-execution_count="77">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">5</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">10</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">0</span>].scatter(tmp.ball_vel_x, tmp.ball_vel_y, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, color<span class="op">=</span><span class="st">"#400170"</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">0</span>].set_xlabel(<span class="st">"x"</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">0</span>].set_ylabel(<span class="st">"y"</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">1</span>].scatter(tmp.ball_vel_x, tmp.ball_vel_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, color<span class="op">=</span><span class="st">"#400170"</span>)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">1</span>].set_xlabel(<span class="st">"x"</span>)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">1</span>].set_ylabel(<span class="st">"z"</span>)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">2</span>].scatter(tmp.ball_vel_y, tmp.ball_vel_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.05</span>, color<span class="op">=</span><span class="st">"#400170"</span>)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">2</span>].set_xlabel(<span class="st">"y"</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">2</span>].set_ylabel(<span class="st">"z"</span>)</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-16-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="player-position" class="level3">
+<h3 class="anchored" data-anchor-id="player-position">Player position</h3>
+<p>The position of player <code>i</code> is provided with <code>x</code>, <code>y</code>, and <code>z</code> coordinates in the <code>p{i}_pos_[xyz]</code> features. Since the histograms of members of the same team are identical, only histograms for player <code>0</code> (first player of team A) and <code>3</code> (first player of team B) are shown. As expected, they are essentially mirror images. The histograms show the following: - For the <code>x</code> dimension, values at the center and the extremes are the most common. The latter is probably due to the fact that cars can drive up the walls to gain height. - For the <code>y</code> dimension, we can see that players are more often in their own half of the pitch than in the half of their opponents (team A attacks in the direction of positive <code>y</code> values). There are peaks on both goal lines, in front of the goals, and in the center of the pitch. - For the <code>z</code> dimension, we can see that high values appear quite rarely (in stark contrast to the ball). As mentioned earlier, the cars require “boost” (which is not abundantly available) to fly in the <code>z</code> dimension.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-20T08:24:50.212446Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-20T08:24:50.211087Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-20T08:24:52.905453Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-20T08:24:52.904083Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-20T08:24:50.212388Z&quot;}" data-trusted="true" data-execution_count="18">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Player positions (min/max):"</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> coord <span class="kw">in</span> [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]:</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    mi, ma <span class="op">=</span> df[<span class="ss">f"p0_pos_</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss">"</span>].<span class="bu">min</span>(), df[<span class="ss">f"p0_pos_</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss">"</span>].<span class="bu">max</span>()</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss"> coordinate: min = </span><span class="sc">{</span>mi<span class="sc">:.3f}</span><span class="ch">\t</span><span class="ss"> max = </span><span class="sc">{</span>ma<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">3</span>))</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f <span class="kw">in</span> <span class="bu">zip</span>(axs.ravel(), [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    ax.hist(df[<span class="ss">f"p</span><span class="sc">{</span><span class="dv">0</span><span class="sc">}</span><span class="ss">_pos_</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">"</span>], bins<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(f, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>fig.suptitle(<span class="st">"Player 0 (team A)"</span>)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">3</span>))</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f <span class="kw">in</span> <span class="bu">zip</span>(axs.ravel(), [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    ax.hist(df[<span class="ss">f"p</span><span class="sc">{</span><span class="dv">3</span><span class="sc">}</span><span class="ss">_pos_</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">"</span>], bins<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(f, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>fig.suptitle(<span class="st">"Player 3 (team B)"</span>)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Player positions (min/max):
+x coordinate: min = -81.904  max = 81.931
+y coordinate: min = -119.820     max = 119.766
+z coordinate: min = 0.026    max = 40.862</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-17-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-17-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Of course, we can also plot all available player positions in the dataset on a map. The “big boost orbs” (more on them soon) are highlighted by black circles (only in the first column for better visibility).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:37:11.216484Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:37:11.215489Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:37:17.361119Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:37:17.360004Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:37:11.216433Z&quot;}" data-trusted="true" data-execution_count="78">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> draw_boost_orbs(ax):</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> x, y <span class="kw">in</span> [(<span class="op">-</span><span class="fl">61.4</span>, <span class="op">-</span><span class="fl">81.9</span>), (<span class="fl">61.4</span>, <span class="op">-</span><span class="fl">81.9</span>), (<span class="op">-</span><span class="fl">71.7</span>, <span class="dv">0</span>), (<span class="fl">71.7</span>, <span class="dv">0</span>), (<span class="op">-</span><span class="fl">61.4</span>, <span class="fl">81.9</span>), (<span class="fl">61.4</span>, <span class="fl">81.9</span>)]:</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        ax.add_patch(patches.Circle((x, y), <span class="dv">10</span>, color<span class="op">=</span><span class="st">"black"</span>, fill<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">8</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>tmp <span class="op">=</span> df.sample(n<span class="op">=</span><span class="bu">int</span>(<span class="fl">1e6</span>), random_state<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, p <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">range</span>(<span class="dv">3</span>)):</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].scatter(tmp[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_pos_x"</span>], tmp[<span class="ss">f"p</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_pos_y"</span>], s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.015</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].set_title(<span class="ss">f"Player </span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> col <span class="op">==</span> <span class="dv">0</span>: draw_boost_orbs(axs[<span class="dv">0</span>][col])</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">1</span>][col].scatter(tmp[<span class="ss">f"p</span><span class="sc">{</span>p<span class="op">+</span><span class="dv">3</span><span class="sc">}</span><span class="ss">_pos_x"</span>], tmp[<span class="ss">f"p</span><span class="sc">{</span>p<span class="op">+</span><span class="dv">3</span><span class="sc">}</span><span class="ss">_pos_y"</span>], s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.015</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">1</span>][col].set_title(<span class="ss">f"Player </span><span class="sc">{</span>p<span class="op">+</span><span class="dv">3</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> col <span class="op">==</span> <span class="dv">0</span>: draw_boost_orbs(axs[<span class="dv">1</span>][col])</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-18-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>The plots show many apparent visual structures. Maybe these can be explained by the starting positions of the players, the boost positions (the big boost orbs at both sides certainly attract players), and preferred routes to drive up walls. We can also see that the most common defending positions are in an arc in front of the goal, sometimes defending players even drive partly inside their own goal. Generally there appear to be no differences between players and teams.</p>
+<section id="player-position-and-goal-scoring" class="level4">
+<h4 class="anchored" data-anchor-id="player-position-and-goal-scoring">Player position and goal scoring</h4>
+<p>Let’s see whether the visual structures disappear when we sort the data by the amount of time until a goal is scored. Since players of the same team don’t show any differences, we’ll only look at players 0 (when attacking) and 3 (when defending), respectively.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:45:57.341218Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:45:57.340791Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:45:59.139049Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:45:59.137785Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:45:57.341172Z&quot;}" data-trusted="true" data-execution_count="85">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">8</span>), sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].scatter(tmp.p0_pos_x, tmp.p0_pos_y, s<span class="op">=</span><span class="fl">0.2</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].set_title(<span class="ss">f"Goal scored in the next </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">0</span>])<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">1</span>])<span class="sc">}</span><span class="ss"> secs"</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">1</span>][col].scatter(tmp.p3_pos_x, tmp.p3_pos_y, s<span class="op">=</span><span class="fl">0.2</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-19-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Now it gets interesting. Some structures that we’ve just seen have now disappeared, but not all of them. We can clearly see that in the first and second interval (7 to 4 seconds before the goal) players of the attacking team are not necessarily in the half of their opponents (in fact, they are in their own half more often than not). This changes afterwards: the bulk of recorded positions of attacking players consistently moves towards the side of the team that will soon concede the goal and becomes increasingly centered. Meanwhile defending players increasingly move centrally towards their own goal and are usually positioned directly in front of their goal just before the goal is scored. The distance of the players (and teams) to the ball and the goal(s) will likely be very useful predictors.</p>
+<p>Let’s move on to plotting the <code>x</code> versus the <code>z</code> dimension (we’ll skip the first interval). We only look events that end with a goal for team <code>A</code>.</p>
+<p>If the players use their boost to fly, they position themselves more centrally in front of the goal the closer in time we get to the scored goal. Attacking players use more of the height and width of the pitch than defending players.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:46:12.232287Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:46:12.231866Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:46:13.841068Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:46:13.839831Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:46:12.232254Z&quot;}" data-trusted="true" data-execution_count="86">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">4</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">8</span>), sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].scatter(tmp.p0_pos_x, tmp.p0_pos_z, s<span class="op">=</span><span class="fl">0.2</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].set_title(<span class="ss">f"Goal scored in the next </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">0</span>])<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">1</span>])<span class="sc">}</span><span class="ss"> secs"</span>)</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">1</span>][col].scatter(tmp.p3_pos_x, tmp.p3_pos_z, s<span class="op">=</span><span class="fl">0.2</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-20-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>What about the <code>y</code> versus the <code>z</code> dimension (we’ll again skip the first interval)?</p>
+<p>The players of both teams move consistently towards the goal (whether they fly or not) the closer in time we get to the goal with the defending players trying to block the attackers directly in front of the goal.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:46:27.628056Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:46:27.626822Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:46:29.211718Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:46:29.210503Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:46:27.628008Z&quot;}" data-trusted="true" data-execution_count="87">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">4</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">8</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].scatter(tmp.p0_pos_y, tmp.p0_pos_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].set_title(<span class="ss">f"Goal scored in the next </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">0</span>])<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">1</span>])<span class="sc">}</span><span class="ss"> secs"</span>)</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">1</span>][col].scatter(tmp.p3_pos_y, tmp.p3_pos_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">.5</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-21-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="missing-values-demolished-players" class="level4">
+<h4 class="anchored" data-anchor-id="missing-values-demolished-players">Missing values (demolished players)</h4>
+<p>What we haven’t looked at until now is the issue of demolished players. If a player gets demolished in a collision, he will miss on the pitch until he gets respawned.</p>
+<p>As we can see, if team A misses player(s) it is much less likely to score a goal. Thus, missing values have high predictive value. In practice, we’d probably want to dive deeper (are there any patterns relating to other variables? can we predict demolitions?); here we’ll move on for the sake of brevity.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:47:18.363605Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:47:18.363140Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:47:19.005710Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:47:19.004308Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:47:18.363566Z&quot;}" data-trusted="true" data-execution_count="89">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"team_A_active"</span>] <span class="op">=</span> df[[<span class="ss">f"p</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">_pos_x"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]].notna().<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">4</span>):</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[df.team_A_active <span class="op">==</span> n]</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Active players team A:"</span>, n)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="ch">\t</span><span class="st">Average time to goal:"</span>, tmp.groupby(<span class="st">"event_id"</span>)[<span class="st">"event_time"</span>].agg(<span class="st">"first"</span>).mean())</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="ch">\t</span><span class="st">Team A scores:"</span>, tmp.groupby(<span class="st">"event_id"</span>)[<span class="st">"team_A_scoring_within_10sec"</span>].agg(<span class="st">"first"</span>).mean())</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Active players team A: 1
+    Average time to goal: -56.19182
+    Team A scores: 0.02766798418972332
+
+Active players team A: 2
+    Average time to goal: -52.985264
+    Team A scores: 0.057919015889287544
+
+Active players team A: 3
+    Average time to goal: -36.29622
+    Team A scores: 0.13558903432946406
+</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="player-velocity" class="level3">
+<h3 class="anchored" data-anchor-id="player-velocity">Player velocity</h3>
+<p>The velocity of player <code>i</code> is given by the corresponding <code>p{i}_vel_[xyz]</code> features. Again the histograms of players of the same team are identical, while the histograms of the opposing team are mirror images. The maximum velocity of a player in each dimension is <code>46.0</code> (slightly lower for <code>z</code>).</p>
+<p>The most interesting histogram below is the one belonging to the <code>y</code> direction. Naturally, players are more often attacking than defending. But if a player drives at maximum speed it is more likely to be for the purpose of defending than attacking.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:52:04.408282Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:52:04.407874Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:52:06.902916Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:52:06.901623Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:52:04.408248Z&quot;}" data-trusted="true" data-execution_count="90">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Player velocity (min/max):"</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> coord <span class="kw">in</span> [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]:</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    mi, ma <span class="op">=</span> df[<span class="ss">f"p0_vel_</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss">"</span>].<span class="bu">min</span>(), df[<span class="ss">f"p0_vel_</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss">"</span>].<span class="bu">max</span>()</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>coord<span class="sc">}</span><span class="ss"> coordinate: min = </span><span class="sc">{</span>mi<span class="sc">:.3f}</span><span class="ch">\t</span><span class="ss"> max = </span><span class="sc">{</span>ma<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">3</span>))</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f <span class="kw">in</span> <span class="bu">zip</span>(axs.ravel(), [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    ax.hist(df[<span class="ss">f"p0_vel_</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">"</span>], bins<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(f, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>fig.suptitle(<span class="st">"Player 0 (team A)"</span>)</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">3</span>))</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f <span class="kw">in</span> <span class="bu">zip</span>(axs.ravel(), [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    ax.hist(df[<span class="ss">f"p3_vel_</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">"</span>], bins<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(f, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>fig.suptitle(<span class="st">"Player 3 (team B)"</span>)</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Player velocity (min/max):
+x coordinate: min = -46.000  max = 46.000
+y coordinate: min = -46.000  max = 46.000
+z coordinate: min = -45.953  max = 45.400</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-23-output-2.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-23-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<section id="player-velocity-and-goal-scoring" class="level4">
+<h4 class="anchored" data-anchor-id="player-velocity-and-goal-scoring">Player velocity and goal scoring</h4>
+<p>When looking at the player velocity in the last time intervals before a goal, we can see that attacking players show an increasing <code>y</code> velocity while the <code>z</code> velocity tends to decrease. This holds true for defending players, even though to a lesser extent. For the <code>x</code> velocity, extreme values become increasingly less common the closer we get to the goal.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:52:18.675462Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:52:18.674170Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:52:21.874583Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:52:21.873428Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:52:18.675377Z&quot;}" data-trusted="true" data-execution_count="91">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">6</span>), sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, c <span class="kw">in</span> <span class="bu">enumerate</span>([<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]):</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">1</span>][col].set_xlabel(<span class="ss">f"</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss"> velocity"</span>)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].axvline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"black"</span>, lw<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">1</span>][col].axvline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"black"</span>, lw<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> interval <span class="kw">in</span> intervals:</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>        tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>        tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> <span class="bu">abs</span>(interval[<span class="dv">0</span>] <span class="op">+</span> interval[<span class="dv">1</span>])<span class="op">/</span><span class="dv">2</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>        axs[<span class="dv">0</span>][col].scatter(tmp[<span class="ss">f"p0_vel_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span>], np.repeat(m, tmp.shape[<span class="dv">0</span>]), s<span class="op">=</span><span class="fl">7.5</span>, alpha<span class="op">=</span><span class="fl">.005</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>        axs[<span class="dv">1</span>][col].scatter(tmp[<span class="ss">f"p3_vel_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span>], np.repeat(m, tmp.shape[<span class="dv">0</span>]), s<span class="op">=</span><span class="fl">7.5</span>, alpha<span class="op">=</span><span class="fl">.005</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-24-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Plotting two dimensions against each other reveals further interesting patterns. When looking at the left column (<code>x</code> versus <code>y</code>) we can see that there are two rings corresponding to the maximum velocity with and without boost. In the last seconds before a goal attacking players tend to use boost in the <code>y</code> direction.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:52:43.022019Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:52:43.020732Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:52:45.577352Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:52:45.576415Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:52:43.021957Z&quot;}" data-trusted="true" data-execution_count="92">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">5</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">12</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">0</span>].scatter(tmp.p0_vel_x, tmp.p0_vel_y, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">0</span>].set_xlabel(<span class="st">"x"</span>)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">0</span>].set_ylabel(<span class="st">"y"</span>)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">1</span>].scatter(tmp.p0_vel_x, tmp.p0_vel_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">1</span>].set_xlabel(<span class="st">"x"</span>)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">1</span>].set_ylabel(<span class="st">"z"</span>)</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">2</span>].scatter(tmp.p0_vel_y, tmp.p0_vel_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">2</span>].set_xlabel(<span class="st">"y"</span>)</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">2</span>].set_ylabel(<span class="st">"z"</span>)</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-25-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Comparing this to the scatterplots for team <code>B</code> shows two things: - defending players are more likely to use boost for maximum velocity when rushing back to defend their own goal (this is probably a very good indicator for an imminent goal) - defending players make significantly less use of the <code>z</code> dimension in the last seconds before a goal than attacking players</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:52:56.148833Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:52:56.147753Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:52:58.670341Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:52:58.669171Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:52:56.148786Z&quot;}" data-trusted="true" data-execution_count="93">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">5</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">12</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">0</span>].scatter(tmp.p3_vel_x, tmp.p3_vel_y, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">0</span>].set_xlabel(<span class="st">"x"</span>)</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">0</span>].set_ylabel(<span class="st">"y"</span>)</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">1</span>].scatter(tmp.p3_vel_x, tmp.p3_vel_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">1</span>].set_xlabel(<span class="st">"x"</span>)</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">1</span>].set_ylabel(<span class="st">"z"</span>)</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">2</span>].scatter(tmp.p3_vel_y, tmp.p3_vel_z, s<span class="op">=</span><span class="fl">0.1</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row <span class="op">==</span> <span class="dv">4</span>: axs[row][<span class="dv">2</span>].set_xlabel(<span class="st">"y"</span>)</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>    axs[row][<span class="dv">2</span>].set_ylabel(<span class="st">"z"</span>)</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-26-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="player-boost" class="level3">
+<h3 class="anchored" data-anchor-id="player-boost">Player boost</h3>
+<p>For each player <code>i</code>, the remaining boost (a value between <code>0</code> and <code>100</code>) is provided in the <code>p{i}_boost</code> feature. Using boost increases a player’s speed and is required to go up in the <code>z</code> dimension. The histogram (similar for all players) shows that it is quite common for players to have no boost or full boost available. Still, players tend to use their boost in the course of the game which explains the overall uniform distribution between <code>0</code> and <code>100</code> (even though the two peaks in the lower half of the value range are striking; they are probably due to the minor boost pads which are not captured in the dataset).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:53:14.992944Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:53:14.992542Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:53:16.005668Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:53:16.004433Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:53:14.992910Z&quot;}" data-trusted="true" data-execution_count="94">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>df.p0_boost.plot.hist(bins<span class="op">=</span><span class="dv">100</span>, figsize<span class="op">=</span>(<span class="dv">4</span>, <span class="dv">3</span>))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-27-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<section id="player-boost-and-goal-scoring" class="level4">
+<h4 class="anchored" data-anchor-id="player-boost-and-goal-scoring">Player boost and goal scoring</h4>
+<p>We again look at the last seconds before a goal to see whether there are useful patterns and indeed there are: - Players of both teams (attacking as well as defending) tend to use boost in the last seconds before a goal. - Members of the attacking team more often use up all their boost than defending players. - Members of the defending team more often have used up all their boost when a goal is imminent than attacking players.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:53:50.537356Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:53:50.536288Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:53:52.994580Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:53:52.993386Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:53:50.537308Z&quot;}" data-trusted="true" data-execution_count="97">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">8</span>), sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>intervals <span class="op">=</span> [(<span class="op">-</span><span class="dv">7</span>, <span class="op">-</span><span class="dv">6</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="op">-</span><span class="dv">4</span>), (<span class="op">-</span><span class="dv">3</span>, <span class="op">-</span><span class="dv">2</span>), (<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, interval <span class="kw">in</span> <span class="bu">enumerate</span>(intervals):</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> df[(df.event_time <span class="op">&gt;=</span> interval[<span class="dv">0</span>]) <span class="op">&amp;</span> (df.event_time <span class="op">&lt;=</span> interval[<span class="dv">1</span>])]</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> tmp[tmp.team_A_scoring_within_10sec <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].hist(tmp.p0_boost, bins<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"#0f0cb3"</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">0</span>][col].set_title(<span class="ss">f"Goal scored in the next </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">0</span>])<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span><span class="bu">abs</span>(interval[<span class="dv">1</span>])<span class="sc">}</span><span class="ss"> secs"</span>)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    axs[<span class="dv">1</span>][col].hist(tmp.p3_boost, bins<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"#a60717"</span>)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-28-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="the-target" class="level3">
+<h3 class="anchored" data-anchor-id="the-target">The target</h3>
+<p>The target is quite imbalanced: team A will score in 10 seconds in only 5.6% of our observations.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-22T08:56:16.668474Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-22T08:56:16.667652Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-22T08:56:16.693978Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-22T08:56:16.692651Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-22T08:56:16.668427Z&quot;}" data-trusted="true" data-execution_count="101">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df.team_A_scoring_within_10sec.value_counts() <span class="op">/</span> <span class="bu">len</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="101">
+<pre><code>0    0.943058
+1    0.056942
+Name: team_A_scoring_within_10sec, dtype: float64</code></pre>
+</div>
+</div>
+</section>
+<section id="summary" class="level3">
+<h3 class="anchored" data-anchor-id="summary">Summary</h3>
+<p>By now, we’ve gained a thorough understanding of the dataset and gathered many ideas that will be useful for feature engineering: computing distance measures for player positions in relation to the ball and goals, using the different patterns in player velocity and boost utilization, exploiting missing values, etc.</p>
+<p>Of course, there are still many possibilities for exploration left and we didn’t use all techniques out there. But we can (and will) always come back to analyzing our data further as our understanding of the data evolves (i.e., when we find interesting new patterns or features).</p>
+<p>In the next post, we’ll go into the theory and practice of validating and evaluating our models.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
