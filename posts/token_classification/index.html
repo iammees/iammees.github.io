@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-09-20">
+
+<title>iammees - Token Classification with DeBERTa</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Token Classification with DeBERTa</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 20, 2022</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>In the recent <a href="https://www.kaggle.com/competitions/feedback-prize-effectiveness/overview">Feedback Prize - Predicting Effective Arguments</a> competition on Kaggle, the task was to automatically rate the quality of argumentative elements in student writing based on some 4,000 essays that had been annotated by human experts and provided by the competition hosts. Since it is quite interesting how language models can be trained to handle this task effectively, here is a quick rundown describing the token classification approach that was commonly used in the competition.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:30.807659Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:30.806718Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:43.402813Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:43.401633Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:30.807546Z&quot;}" data-trusted="true" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> KFold</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoConfig, AutoTokenizer, AutoModelForTokenClassification </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> Trainer, TrainingArguments</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> DataCollatorForTokenClassification</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> Dataset</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> spacy</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spacy <span class="im">import</span> displacy</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> codecs</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> text_unidecode <span class="im">import</span> unidecode</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:43.413230Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:43.412572Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:43.431009Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:43.430130Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:43.413189Z&quot;}" data-trusted="true" data-execution_count="3">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> pd.read_csv(<span class="st">"train.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="the-training-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-training-data">The Training Data</h2>
+<p>Let’s begin by having a look at the training data which consists of 4,191 essays containing a total of 36,765 so-called discourse texts (i.e., argumentative elements of an essay). These discourse texts have been labeled by human annotators as one of seven discourse types (lead, position, claim, counterclaim, rebuttal, evidence, or concluding statement) and rated as either ineffective, adequate, or effective. While the discourse type will be available at test time, the task of the model will be to predict the quality rating.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:43.773030Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:43.772782Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:43.794864Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:43.793571Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:43.772996Z&quot;}" data-trusted="true" data-execution_count="5">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Number of discourse texts:"</span>, train_df.discourse_id.unique().shape[<span class="dv">0</span>])</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Number of essays:"</span>, train_df.essay_id.unique().shape[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of discourse texts: 36765
+Number of essays: 4191</code></pre>
+</div>
+</div>
+<p>We won’t do thorough EDA, but take a quick look at some aggregate statistics.</p>
+<p>Naturally, some discourse types (like claim and evidence) occur more often than others (e.g., the ones that only occur at the beginning or at the end of an essay). Counterclaim and rebuttal are the least common labels.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:43.796886Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:43.796611Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:44.056716Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:44.055812Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:43.796849Z&quot;}" data-trusted="true" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">3</span>))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>sns.countplot(data<span class="op">=</span>train_df, x<span class="op">=</span><span class="st">"discourse_type"</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-5-output-1.png" class="quarto-discovered-preview-image img-fluid"></p>
+</div>
+</div>
+<p>The most common rating is “adequate” with “effective” coming in second and “ineffective” third.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:44.058974Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:44.058383Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:44.240363Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:44.239232Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:44.058933Z&quot;}" data-trusted="true" data-execution_count="7">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>effectiveness_colors <span class="op">=</span> {<span class="st">"Ineffective"</span>: <span class="st">"#ff8286"</span>, <span class="st">"Adequate"</span>: <span class="st">"#f7f5b2"</span>, <span class="st">"Effective"</span>: <span class="st">"#9ef7b8"</span>}</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>effectiveness_order <span class="op">=</span> [<span class="st">"Ineffective"</span>, <span class="st">"Adequate"</span>, <span class="st">"Effective"</span>]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">3</span>))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>sns.countplot(data<span class="op">=</span>train_df, x<span class="op">=</span><span class="st">"discourse_effectiveness"</span>, ax<span class="op">=</span>ax, palette<span class="op">=</span>effectiveness_colors, order<span class="op">=</span>effectiveness_order)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-6-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:44.242195Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:44.241908Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:44.251583Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:44.250227Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:44.242139Z&quot;}" data-trusted="true" data-execution_count="8">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_essay_by_id(essay_id):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(<span class="ss">f"</span><span class="sc">{</span>base_path<span class="sc">}</span><span class="ss">/train/</span><span class="sc">{</span>essay_id<span class="sc">}</span><span class="ss">.txt"</span>, <span class="st">"r"</span>) <span class="im">as</span> f:</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        essay <span class="op">=</span> f.read()</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> essay</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> display_essay(essay_id):</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    essay <span class="op">=</span> get_essay_by_id(essay_id)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    ents <span class="op">=</span> []</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    color_map <span class="op">=</span> {<span class="st">"Ineffective"</span>: <span class="st">"#ff8286"</span>, <span class="st">"Adequate"</span>: <span class="st">"#f7f5b2"</span>, <span class="st">"Effective"</span>: <span class="st">"#9ef7b8"</span>}</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    colors <span class="op">=</span> {}</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, row <span class="kw">in</span> train_df.loc[train_df.essay_id <span class="op">==</span> essay_id].iterrows():</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        segment, label, rating <span class="op">=</span> row.discourse_text, row.discourse_type, row.discourse_effectiveness</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        start, end <span class="op">=</span> re.search(segment.strip(), essay).span()</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        ent <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss"> - </span><span class="sc">{</span>rating<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        ents.append({</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">"start"</span>: start,</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>            <span class="st">"end"</span>: end,</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">"label"</span>: ent</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ent <span class="kw">not</span> <span class="kw">in</span> colors:</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>            colors[ent] <span class="op">=</span> color_map[rating]</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    ann <span class="op">=</span> {</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">"text"</span>: essay,</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>        <span class="st">"ents"</span>: ents</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    options <span class="op">=</span> {</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">"colors"</span>: colors</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    displacy.render(ann, style<span class="op">=</span><span class="st">"ent"</span>, manual<span class="op">=</span><span class="va">True</span>, jupyter<span class="op">=</span><span class="va">True</span>, options<span class="op">=</span>options)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>We can use spacy’s <a href="https://spacy.io/usage/visualizers"><code>displacy</code> visualizer</a> to display essays annotated with the discourse type labels and color-coded ratings:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:44.253725Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:44.253449Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:44.280066Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:44.279185Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:44.253688Z&quot;}" data-trusted="true" data-execution_count="9">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>display_essay(<span class="st">"8727FFFF8441"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span class="tex2jax_ignore"><div class="entities" style="line-height: 2.5; direction: ltr">Dear Principal,<br><br>
+<mark class="entity" style="background: #9ef7b8; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    Community service is a way to distinguish selfish people from selfless people. Some people do large amounts of community service such as working at a soup kitchen and donating food to a food bank. Some even take it to the next level by going and helping out in places like Africa. Unfortunately not all people are open to helping people.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Lead - Effective</span>
+</mark>
+ 
+<mark class="entity" style="background: #f7f5b2; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    At our school we should enforce that kids have to participate in community service at least twice a year.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Position - Adequate</span>
+</mark>
+<br><br>
+<mark class="entity" style="background: #ff8286; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    Community service makes people feel better.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Claim - Ineffective</span>
+</mark>
+ 
+<mark class="entity" style="background: #9ef7b8; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    It is a very moving experience when you give food to someone who is hungry. It teaches you to be appreciative of what you have after you see someone who has nothing. It also makes you feel good inside. Having community service might change the attitude of some kids at your school.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Evidence - Effective</span>
+</mark>
+<br><br>
+<mark class="entity" style="background: #f7f5b2; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    Some people think that community service is useless or a waste of time.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Counterclaim - Adequate</span>
+</mark>
+ 
+<mark class="entity" style="background: #f7f5b2; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    But in reality it only takes up a few days a year of an average persons life.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Rebuttal - Adequate</span>
+</mark>
+ 
+<mark class="entity" style="background: #f7f5b2; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    To only make the kids do two days of community service is no high price for anyone. It even doesn't take up the entire day, only a couple of hours.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Evidence - Adequate</span>
+</mark>
+<br><br>
+<mark class="entity" style="background: #f7f5b2; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    Community service helps people, makes you feel better, and is not a humongous time consumer. Anyone who has some extra time should defiantly chose to do some. No one has a busy enough schedule do not be able to participate. As the principal of the school please require students to do community service.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Concluding Statement - Adequate</span>
+</mark>
+</div></span>
+</div>
+</div>
+<p>Note that an essay doesn’t necessarily contain all discourse types:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:44.284076Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:44.283892Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:44.556617Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:44.555603Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:44.284053Z&quot;}" data-trusted="true" data-execution_count="10">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>by_essay_id <span class="op">=</span> train_df.groupby([<span class="st">"essay_id"</span>]).discourse_type.value_counts().to_frame()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>by_essay_id.columns <span class="op">=</span> [<span class="st">"count_"</span>]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>by_essay_id.reset_index(drop<span class="op">=</span><span class="va">False</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>by_essay_id <span class="op">=</span> by_essay_id.pivot(index<span class="op">=</span><span class="st">"essay_id"</span>, columns<span class="op">=</span><span class="st">"discourse_type"</span>).count_</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>by_essay_id</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">discourse_type</th>
+<th data-quarto-table-cell-role="th">Claim</th>
+<th data-quarto-table-cell-role="th">Concluding Statement</th>
+<th data-quarto-table-cell-role="th">Counterclaim</th>
+<th data-quarto-table-cell-role="th">Evidence</th>
+<th data-quarto-table-cell-role="th">Lead</th>
+<th data-quarto-table-cell-role="th">Position</th>
+<th data-quarto-table-cell-role="th">Rebuttal</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">essay_id</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">00066EA9880D</td>
+<td>3.0</td>
+<td>1.0</td>
+<td>NaN</td>
+<td>3.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">000E6DE9E817</td>
+<td>5.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>3.0</td>
+<td>NaN</td>
+<td>1.0</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0016926B079C</td>
+<td>7.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>3.0</td>
+<td>NaN</td>
+<td>1.0</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">00203C45FC55</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>3.0</td>
+<td>3.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>3.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0029F4D19C3F</td>
+<td>2.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>2.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">FFA381E58FC6</td>
+<td>2.0</td>
+<td>1.0</td>
+<td>NaN</td>
+<td>1.0</td>
+<td>NaN</td>
+<td>1.0</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">FFC43F453EF6</td>
+<td>4.0</td>
+<td>1.0</td>
+<td>3.0</td>
+<td>1.0</td>
+<td>NaN</td>
+<td>1.0</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">FFD97A99CEBA</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>1.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">FFF868E06176</td>
+<td>3.0</td>
+<td>1.0</td>
+<td>NaN</td>
+<td>3.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">FFFF80B8CC2F</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>1.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+<p>4191 rows × 7 columns</p>
+</div>
+</div>
+</div>
+<p>Also, as it is usually the case with human-labeled datasets, the quality of the annotations can vary significantly between essays. While an essay on average contains almost 9 different discourse elements, there are quite a few essays with only one annotation that has been rated as a whole:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:44.558576Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:44.558128Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:44.575058Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:44.574221Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:44.558539Z&quot;}" data-trusted="true" data-execution_count="11">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>display_essay(<span class="st">"AB02689C1A9B"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span class="tex2jax_ignore"><div class="entities" style="line-height: 2.5; direction: ltr">
+<mark class="entity" style="background: #ff8286; padding: 0.45em 0.6em; margin: 0 0.25em; line-height: 1; border-radius: 0.35em;">
+    In Germany, residetns have given up on cars. Vauban's streets are completely "car-free", except the main throughfare, where the tram to downtown Freiburg runs, and a few streets on one edge are only two places to park.
+
+70 percent of Vauban's families do not own cars, and the 57 percent sold a car to move there. Some say they feel happier now than before when they had a car. Automobiles are the linchpin of suburbs, where middle-class families from Chicago to Shanghai tend to make their homes. Greenhouse gas emissions are reduced drastically. Passenger cars are responsible for 12 percent of greenhouse gas emissions in Europe, and up to 50 percent in some car-intensive areas in the U.S.
+
+In the new approach to make cities denser, and better for walking stores are being placed a walk away, on a main street, rather than in malls along some distant highway. In teh U.S., the Enviornmental Protection Agency is promoting "car reduced" communities, and legistors are starting to act, if cautiously. In previous bills, 80 percent of appropriations have by law gone to highways and only 20 percent to other tansport.
+
+After days of near record pollution, Paris enforced a partial driving ban to clear the air of the global city. Almost 4,000 drivers were fined, according to Reuters, an international news agency headquartered in London; 27 people had their cars impounded for their reaction to the fine. Cold nights and warm days caused the warmer layer of air to trap car emissions. The smog cleared enough Monday for the ruling French party to rescind the ban for odd-numbered plates on Tuesday.
+
+President Obama's goal to curb the U.S.'s greenhouse gas emissions, unveiled last week. Recent astudies suggest that Americans are buying fewer cars, driving less and getting fewer licenses as each year goes by. Pedestrian, bicycle, private cars, commercial and public transportation traffic are woven into a connected network to save time, conserve resources, lower emissions and improve safety.
+    <span style="font-size: 0.8em; font-weight: bold; line-height: 1; border-radius: 0.35em; vertical-align: middle; margin-left: 0.5rem">Evidence - Ineffective</span>
+</mark>
+    </div></span>
+</div>
+</div>
+<p>Finally, the same discourse text can appear in different essays, belong to different discourse types, and have different effectiveness ratings:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:44.576685Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:44.576442Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:44.603295Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:44.602375Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:44.576653Z&quot;}" data-trusted="true" data-execution_count="12">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>duplicates <span class="op">=</span> train_df[train_df.discourse_text.duplicated(keep<span class="op">=</span><span class="va">False</span>)].sort_values(by<span class="op">=</span><span class="st">"discourse_text"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>duplicates.head(<span class="dv">25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">discourse_id</th>
+<th data-quarto-table-cell-role="th">essay_id</th>
+<th data-quarto-table-cell-role="th">discourse_text</th>
+<th data-quarto-table-cell-role="th">discourse_type</th>
+<th data-quarto-table-cell-role="th">discourse_effectiveness</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">26691</td>
+<td>7f9c3500259d</td>
+<td>A602D45D22B2</td>
+<td>"That's a lava dome that takes the form of an ...</td>
+<td>Evidence</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">27350</td>
+<td>d628a6adda3a</td>
+<td>ADB68BCD2874</td>
+<td>"That's a lava dome that takes the form of an ...</td>
+<td>Evidence</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">25391</td>
+<td>781452d9404c</td>
+<td>942ECB176B3A</td>
+<td>At the most basic level, the electoral college...</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">28835</td>
+<td>6fa171a95540</td>
+<td>C2BAF4ADA2CA</td>
+<td>At the most basic level, the electoral college...</td>
+<td>Claim</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">28436</td>
+<td>9e12ec699196</td>
+<td>BB3A6C2D0B65</td>
+<td>Big States</td>
+<td>Claim</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">20121</td>
+<td>35bf70c4a673</td>
+<td>4CA37D113612</td>
+<td>Big States</td>
+<td>Claim</td>
+<td>Ineffective</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3933</td>
+<td>c5b2ecb3888e</td>
+<td>44E2726DA1B3</td>
+<td>I agree</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">11285</td>
+<td>5e4022e93247</td>
+<td>CB66B685DAF6</td>
+<td>I agree</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">17087</td>
+<td>99782ca26927</td>
+<td>2714214F7D9E</td>
+<td>I think students should be required to perform...</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">29590</td>
+<td>33d6bbba823c</td>
+<td>CE64FA08E4CF</td>
+<td>I think students should be required to perform...</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">15462</td>
+<td>8ae0dc965236</td>
+<td>0EAF5E712F0D</td>
+<td>I think we should keep the Electoral College</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">16552</td>
+<td>77f5379ee53b</td>
+<td>1ED8279252FB</td>
+<td>I think we should keep the Electoral College</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">15229</td>
+<td>6e9d3d79814a</td>
+<td>0B57654EDEC1</td>
+<td>I think we should keep the Electoral College</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">28669</td>
+<td>a12f7822cf10</td>
+<td>C07E3C23CE7B</td>
+<td>I think we should keep the electoral college</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">19449</td>
+<td>f54814e5b814</td>
+<td>4478B3244F49</td>
+<td>I think we should keep the electoral college</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">20842</td>
+<td>34b98386dc46</td>
+<td>5729D5AE055C</td>
+<td>I would want to keep the Electoral College</td>
+<td>Position</td>
+<td>Effective</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">28406</td>
+<td>98154af4855d</td>
+<td>BACC53ECC1FB</td>
+<td>I would want to keep the Electoral College</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7664</td>
+<td>912314d42f90</td>
+<td>8B19F3C51A0E</td>
+<td>In "The Challenge of Exploring Venus," the aut...</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8072</td>
+<td>1a21c7fe68bb</td>
+<td>9224F001F074</td>
+<td>In "The Challenge of Exploring Venus," the aut...</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">17752</td>
+<td>3878c364f23d</td>
+<td>2E4AFCD3987F</td>
+<td>In the ruels of voteing there should be change.</td>
+<td>Concluding Statement</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">17743</td>
+<td>a3b559b3a53d</td>
+<td>2E4AFCD3987F</td>
+<td>In the ruels of voteing there should be change.</td>
+<td>Position</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">22657</td>
+<td>1e1b0be69df3</td>
+<td>6F896BABB13C</td>
+<td>On the other hand the electoral college is a g...</td>
+<td>Counterclaim</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">22652</td>
+<td>76af51544c15</td>
+<td>6F896BABB13C</td>
+<td>On the other hand the electoral college is a g...</td>
+<td>Counterclaim</td>
+<td>Adequate</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">11970</td>
+<td>cc0dad1234ec</td>
+<td>D8013F49DE51</td>
+<td>Opponents say that cell phones are good becaus...</td>
+<td>Counterclaim</td>
+<td>Adequate</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6570</td>
+<td>dee3f8aec4fc</td>
+<td>7742D58270C9</td>
+<td>Opponents say that cell phones are good becaus...</td>
+<td>Counterclaim</td>
+<td>Ineffective</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>This indicates that context will matter a lot, i.e.&nbsp;the model will need the entire essay instead of the discourse text segment alone in order to make good predictions.</p>
+</section>
+<section id="the-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-model">The Model</h2>
+<p>Now the question is, how can we frame the task so that it can be handled by a language model? Or, to be more precise, how can we design the input? One possible approach is defining the problem as text classification by doing something like this:</p>
+<p><code>discourse type: discourse text SEP essay text</code></p>
+<p>Although this may work relatively fine, there is a problem. This approach requires one forward pass for each discourse text in the dataset, and the context isn’t used as effectively as it could be. Thus, it was <a href="https://www.kaggle.com/code/nbroad/token-classification-approach-fpe#Training">proposed</a> to frame the problem as token classification instead of text classification. That is, we’ll use the entire essay and wrap each discourse text segment in corresponding <code>CLS</code> and <code>END</code> tokens (e.g., <code>CLS_LEAD</code> and <code>END_LEAD</code>). Apart from faster training, this approach will likely improve the model’s understanding of the context of each discourse segment. To compute the class scores we’ll only use the output of the classification head at the <code>CLS</code> tokens.</p>
+<p>Let’s see how this works out in code.</p>
+<section id="tokenization" class="level3">
+<h3 class="anchored" data-anchor-id="tokenization">Tokenization</h3>
+<p>Let’s begin by loading the full text for each essay and including it in our existing <code>train_df</code> dataframe. Note that we need to solve encoding issues before we can tokenize the dataset.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:44.605071Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:44.604757Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:44.614691Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:44.613829Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:44.605037Z&quot;}" data-trusted="true" data-execution_count="13">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># helper functions for fixing potential encoding errors</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> replace_encoding_with_utf8(error):</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> error.<span class="bu">object</span>[error.start : error.end].encode(<span class="st">"utf-8"</span>), error.end</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> replace_decoding_with_cp1252(error):</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> error.<span class="bu">object</span>[error.start : error.end].decode(<span class="st">"cp1252"</span>), error.end</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>codecs.register_error(<span class="st">"replace_encoding_with_utf8"</span>, replace_encoding_with_utf8)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>codecs.register_error(<span class="st">"replace_decoding_with_cp1252"</span>, replace_decoding_with_cp1252)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> resolve_encodings_and_normalize(text):</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    text <span class="op">=</span> (</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        text.encode(<span class="st">"raw_unicode_escape"</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>            .decode(<span class="st">"utf-8"</span>, errors<span class="op">=</span><span class="st">"replace_decoding_with_cp1252"</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>            .encode(<span class="st">"cp1252"</span>, errors<span class="op">=</span><span class="st">"replace_encoding_with_utf8"</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>            .decode(<span class="st">"utf-8"</span>, errors<span class="op">=</span><span class="st">"replace_decoding_with_cp1252"</span>)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    text <span class="op">=</span> unidecode(text)</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> text</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co"># retrieves the full text of an essay</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_essay_text(example):</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    essay_id <span class="op">=</span> example[<span class="st">"essay_id"</span>]</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(base_path<span class="op">/</span><span class="st">"train"</span><span class="op">/</span><span class="ss">f"</span><span class="sc">{</span>essay_id<span class="sc">}</span><span class="ss">.txt"</span>, <span class="st">"r"</span>) <span class="im">as</span> f:</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>        example[<span class="st">"essay_text"</span>] <span class="op">=</span> resolve_encodings_and_normalize(f.read())</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> example</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:44.616418Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:44.616142Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:55.417484Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:55.416499Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:44.616382Z&quot;}" data-trusted="true" data-execution_count="14">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> pd.read_csv(base_path<span class="op">/</span><span class="st">"train.csv"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>essay_ds <span class="op">=</span> Dataset.from_dict({</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"essay_id"</span>: train_df.essay_id.unique()</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>essay_ds <span class="op">=</span> essay_ds.<span class="bu">map</span>(</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    get_essay_text,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    num_proc<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    batched<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    desc<span class="op">=</span><span class="st">"Loading essay texts"</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>essay_df <span class="op">=</span> essay_ds.to_pandas()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>train_df[<span class="st">"discourse_text"</span>] <span class="op">=</span> train_df[<span class="st">"discourse_text"</span>].<span class="bu">apply</span>(resolve_encodings_and_normalize)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> train_df.merge(essay_df, on<span class="op">=</span><span class="st">"essay_id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>After defining the custom tokens, we can load the tokenizer and register them using the <code>add_special_tokens</code> method:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:57.788860Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:57.788224Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:03:57.802847Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:03:57.799338Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:57.788821Z&quot;}" data-trusted="true" data-execution_count="16">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>dtype_classes <span class="op">=</span> [<span class="st">"Claim"</span>, <span class="st">"Concluding Statement"</span>, <span class="st">"Counterclaim"</span>, <span class="st">"Evidence"</span>, <span class="st">"Lead"</span>, <span class="st">"Position"</span>, <span class="st">"Rebuttal"</span>]</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>dtype2clstok <span class="op">=</span> {dtype: <span class="ss">f"[CLS_</span><span class="sc">{</span>dtype<span class="sc">.</span>upper()<span class="sc">}</span><span class="ss">]"</span> <span class="cf">for</span> dtype <span class="kw">in</span> dtype_classes}</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>dtype2endtok <span class="op">=</span> {dtype: <span class="ss">f"[END_</span><span class="sc">{</span>dtype<span class="sc">.</span>upper()<span class="sc">}</span><span class="ss">]"</span> <span class="cf">for</span> dtype <span class="kw">in</span> dtype_classes}</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>dtype2clstok</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<pre><code>{'Claim': '[CLS_CLAIM]',
+ 'Concluding Statement': '[CLS_CONCLUDING STATEMENT]',
+ 'Counterclaim': '[CLS_COUNTERCLAIM]',
+ 'Evidence': '[CLS_EVIDENCE]',
+ 'Lead': '[CLS_LEAD]',
+ 'Position': '[CLS_POSITION]',
+ 'Rebuttal': '[CLS_REBUTTAL]'}</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:03:57.805834Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:03:57.805034Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:02.341095Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:02.340263Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:03:57.805744Z&quot;}" data-trusted="true" data-execution_count="17">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>MODEL_CKPT <span class="op">=</span> <span class="st">"microsoft/deberta-v3-small"</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(MODEL_CKPT)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>tokenizer.add_special_tokens(</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"additional_special_tokens"</span>: <span class="bu">list</span>(dtype2clstok.values()) <span class="op">+</span> <span class="bu">list</span>(dtype2endtok.values())}</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"3b708b18822e4ff5a5a4b63f83a98a41","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"d5ebeece7ccd4d558bf61ec588331498","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"b8daca6166e04389a8fe1bb3cbd8f9cc","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>14</code></pre>
+</div>
+</div>
+<p>Note that we need to save the input id used by the tokenizer for each <code>CLS</code> token, so that we can set all other tokens to <code>-100</code>.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:02.342865Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:02.342619Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:02.353629Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:02.352701Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:02.342830Z&quot;}" data-trusted="true" data-execution_count="18">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dtype2clstokid <span class="op">=</span> {dtype: tokenizer.encode(tok)[<span class="dv">1</span>] <span class="cf">for</span> dtype, tok <span class="kw">in</span> dtype2clstok.items()}</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>dtype2clstokid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="18">
+<pre><code>{'Claim': 128001,
+ 'Concluding Statement': 128002,
+ 'Counterclaim': 128003,
+ 'Evidence': 128004,
+ 'Lead': 128005,
+ 'Position': 128006,
+ 'Rebuttal': 128007}</code></pre>
+</div>
+</div>
+<p>Now to the most important function. <code>tokenize</code> inserts the custom tokens at the appropriate positions into an essay and returns the entire tokenized text.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:02.355631Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:02.355372Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:02.368594Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:02.367556Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:02.355595Z&quot;}" data-trusted="true" data-execution_count="19">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># gets the start and end index for each discourse_text in an essay</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_positions(example):</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    essay_text <span class="op">=</span> example[<span class="st">"essay_text"</span>][<span class="dv">0</span>]</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    cur_idx <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    idxs <span class="op">=</span> []</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># loop over all discourse texts in the essay</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> dt <span class="kw">in</span> example[<span class="st">"discourse_text"</span>]:</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        matches <span class="op">=</span> <span class="bu">list</span>(re.finditer(re.escape(dt.strip()), essay_text))</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(matches) <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> m <span class="kw">in</span> matches:</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> m.start() <span class="op">&gt;=</span> cur_idx:</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">break</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> <span class="bu">len</span>(matches) <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>            idxs.append([<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span>  </span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> matches[<span class="dv">0</span>]</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>        idxs.append([m.start(), m.end()])</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>        cur_idx <span class="op">=</span> m.start()</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> idxs</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>label2id <span class="op">=</span> {</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Adequate"</span>: <span class="dv">0</span>,</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Effective"</span>: <span class="dv">1</span>,</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Ineffective"</span>: <span class="dv">2</span></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tokenize(example):</span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    example[<span class="st">"idxs"</span>] <span class="op">=</span> get_positions(example)</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>    essay_text <span class="op">=</span> example[<span class="st">"essay_text"</span>][<span class="dv">0</span>]</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>    segments <span class="op">=</span> []</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> []</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>    prev_end <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> idxs, dtype, label <span class="kw">in</span> <span class="bu">zip</span>(example[<span class="st">"idxs"</span>], </span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a>                                  example[<span class="st">"discourse_type"</span>],</span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>                                  example[<span class="st">"discourse_effectiveness"</span>]):</span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> idxs <span class="op">==</span> [<span class="op">-</span><span class="dv">1</span>]:</span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a>        start, end <span class="op">=</span> idxs</span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> start <span class="op">!=</span> prev_end:</span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a>            segments.append(essay_text[prev_end:start])</span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>            prev_end <span class="op">=</span> start</span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> start <span class="op">==</span> prev_end:</span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a>            segments.append(dtype2clstok[dtype])</span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a>            segments.append(essay_text[start:end])</span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a>            segments.append(dtype2endtok[dtype])</span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>        prev_end <span class="op">=</span> end</span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a>        labels.append(label2id[label])</span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a>    tokenized <span class="op">=</span> tokenizer(<span class="st">" "</span>.join(segments),</span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>                          padding<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a>                          truncation<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>                          max_length<span class="op">=</span><span class="dv">2048</span>,</span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a>                          add_special_tokens<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add -100 labels for each token except for the CLS tokens</span></span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a>    <span class="co"># -100 labels will be ignored by the loss function</span></span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a>    labels_final <span class="op">=</span> []</span>
+<span id="cb21-68"><a href="#cb21-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> id_ <span class="kw">in</span> tokenized[<span class="st">"input_ids"</span>]:</span>
+<span id="cb21-69"><a href="#cb21-69" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> id_ <span class="kw">in</span> dtype2clstokid.values():</span>
+<span id="cb21-70"><a href="#cb21-70" aria-hidden="true" tabindex="-1"></a>            labels_final.append(labels[idx])</span>
+<span id="cb21-71"><a href="#cb21-71" aria-hidden="true" tabindex="-1"></a>            idx <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb21-72"><a href="#cb21-72" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb21-73"><a href="#cb21-73" aria-hidden="true" tabindex="-1"></a>            labels_final.append(<span class="op">-</span><span class="dv">100</span>)</span>
+<span id="cb21-74"><a href="#cb21-74" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-75"><a href="#cb21-75" aria-hidden="true" tabindex="-1"></a>    tokenized[<span class="st">"labels"</span>] <span class="op">=</span> labels_final</span>
+<span id="cb21-76"><a href="#cb21-76" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-77"><a href="#cb21-77" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tokenized</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>To tokenize the entire dataset, we’ll first create a <code>Dataset</code> with the training date grouped by <code>essay_id</code> to loop over all <code>discourse_text</code> contained in the text. Then we’ll use the <code>map()</code> method to tokenize each essay:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:02.370505Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:02.370239Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:02.764561Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:02.763539Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:02.370470Z&quot;}" data-trusted="true" data-execution_count="20">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>train_df_by_id <span class="op">=</span> train_df.groupby([<span class="st">"essay_id"</span>]).agg(<span class="bu">list</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> Dataset.from_pandas(train_df_by_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:02.766305Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:02.766031Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:34.081562Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:34.080589Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:02.766268Z&quot;}" data-trusted="true" data-execution_count="21">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> (ds.<span class="bu">map</span>(tokenize, batched<span class="op">=</span><span class="va">False</span>, num_proc<span class="op">=</span><span class="dv">2</span>, desc<span class="op">=</span><span class="st">"Tokenizing"</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>        .remove_columns([<span class="st">"discourse_id"</span>, <span class="st">"discourse_text"</span>, <span class="st">"discourse_type"</span>, <span class="st">"essay_text"</span>, <span class="st">"essay_id"</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:34.085170Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:34.084570Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:34.117354Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:34.116540Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:34.085111Z&quot;}" data-trusted="true" data-execution_count="22">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ds.save_to_disk(<span class="st">"tokenized.dataset"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Let’s look at an example to see whether we did everything correctly:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:34.119096Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:34.118836Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:34.128210Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:34.127200Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:34.119060Z&quot;}" data-trusted="true" data-execution_count="23">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>example_tokens <span class="op">=</span> tokenizer.convert_ids_to_tokens(ds[<span class="dv">0</span>][<span class="st">"input_ids"</span>])</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>example_string <span class="op">=</span> tokenizer.convert_tokens_to_string(example_tokens)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>example_string</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="23">
+<pre><code>"[CLS][CLS_LEAD] Driverless cars are exaclty what you would expect them to be. Cars that will drive without a person actually behind the wheel controlling the actions of the vehicle. The idea of driverless cars going in to developement shows the amount of technological increase that the wolrd has made. The leader of this idea of driverless cars are the automobiles they call Google cars. The arduous task of creating safe driverless cars has not been fully mastered yet.[END_LEAD][CLS_POSITION] The developement of these cars should be stopped immediately because there are too many hazardous and dangerous events that could occur.[END_POSITION] One thing that the article mentions is that[CLS_CLAIM] the driver will be alerted when they will need to take over the driving responsibilites of the car.[END_CLAIM][CLS_EVIDENCE] This is such a dangerous thing because we all know that whenever humans get their attention drawn in on something interesting it is hard to draw their focus somewhere else. The article explains that companies are trying to implement vibrations when the car is in trouble. Their are some people out there who do not feel vibrations and therefore would not be able to take control of the car when needed. The article also states that companies are trying to put in-car entertainment into the car while it is being driven. This is just another thing that will distract the person who is supposed to be ready at all times to take over driving when asked to do so.[END_EVIDENCE][CLS_CLAIM] Another thing that can go wrong with these cars is any type of techological malfucntion.[END_CLAIM][CLS_EVIDENCE] Every person with any kind of technological device has experienced some sort of error. Now imagine if your car has an error technologically and it takes the life of one your loved ones. The article talks about sensors around the car that read the surroundings of the car and that is what helps he car to drive without a true driver behind the wheel. Those sensors could have a malfunctions and be sensing something that is that even there and make a left turn into a 100 foot deep lake. The vibrations that cause the driver to be notified to drive could malfunction and now the driver has no way of knowing that the car is in trouble and now you, the driver, and the rest of your passengers are being buried in your local cemetery.[END_EVIDENCE] One last thing that the article mentions is negative about the developement of driverless cars is[CLS_CLAIM] who to blame for the wreck if there were possibly some sort of technological malfunciton or even some sort of human error when taking over the driving aspect.[END_CLAIM][CLS_EVIDENCE] Should the manufacturer of the car be blamed or should it be the driver? No one knows because there is so many different factors that attribute to who to assign the blame to. Some of what will have to be made is a judgement call. When it comes to insurance and having to pay for any damages you do not want someone to have to make some sort of judgement call. What if that judgement call that was made was the wrong call? Now there are going to be even more lawsuits today in our courts than there already are. This problem alone will just lead to many more issues today in the world that should not have to be dealt with.[END_EVIDENCE][CLS_CONCLUDING STATEMENT] With all these things that could possibly go wrong with these driverless cars there is no way that the developement of them should continue any further. In today's society if something bad COULD happen or something COULD go wrong, it WILL happen, and it WILL go wrong. There are just way too many safety hazards that come along with these driverless cars. Becuase of all of these problems that arise with the cars it is just a gargantuan risk to implement these cars into our lifestyles.[END_CONCLUDING STATEMENT][SEP]"</code></pre>
+</div>
+</div>
+<p>Looks good.</p>
+</section>
+<section id="fine-tuning-deberta" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-deberta">Fine-tuning DeBERTa</h3>
+<p>Since models of the DeBERTa family are generally the best default choice in English language tasks, we’ll use the <code>microsoft/deberta-v3-small</code> checkpoint from the HuggingFace Hub and train it for three epochs.</p>
+<p>While we would normally employ a cross-validation scheme that validates on essay topics that the model hasn’t seen during training, we’ll stick to a very simple train test split for our demonstration purposes.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:34.130112Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:34.129864Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:34.151003Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:34.150178Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:34.130078Z&quot;}" data-trusted="true" data-execution_count="24">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>dds <span class="op">=</span> ds.train_test_split(test_size<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>dds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="24">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ['discourse_effectiveness', 'idxs', 'input_ids', 'token_type_ids', 'attention_mask', 'labels'],
+        num_rows: 3352
+    })
+    test: Dataset({
+        features: ['discourse_effectiveness', 'idxs', 'input_ids', 'token_type_ids', 'attention_mask', 'labels'],
+        num_rows: 839
+    })
+})</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:34.152620Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:34.152306Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:34.168362Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:34.167431Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:34.152583Z&quot;}" data-trusted="true" data-execution_count="25">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>TRAINING_ARGS <span class="op">=</span> {</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"learning_rate"</span>: <span class="fl">9e-6</span>,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"num_train_epochs"</span>: <span class="dv">3</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"weight_decay"</span>: <span class="fl">0.01</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"warmup_ratio"</span>: <span class="fl">0.1</span>,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"per_device_train_batch_size"</span>: <span class="dv">4</span>,</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"per_device_eval_batch_size"</span>: <span class="dv">4</span>,</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"fp16"</span>: <span class="va">True</span>,</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"optim"</span>: <span class="st">"adamw_torch"</span>,</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"do_train"</span>: <span class="va">True</span>,</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"do_eval"</span>: <span class="va">True</span>,</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"logging_steps"</span>: <span class="dv">50</span>,</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"save_strategy"</span>: <span class="st">"epoch"</span>,</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"evaluation_strategy"</span>: <span class="st">"epoch"</span>,</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"save_total_limit"</span>: <span class="dv">1</span>,</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"group_by_length"</span>: <span class="va">True</span>,</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"save_total_limit"</span>: <span class="dv">1</span>,</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"metric_for_best_model"</span>: <span class="st">"loss"</span>,</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"greater_is_better"</span>: <span class="va">False</span>,</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"gradient_checkpointing"</span>: <span class="va">True</span>,</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"gradient_accumulation_steps"</span>: <span class="dv">1</span>,</span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"output_dir"</span>: <span class="st">"../output/"</span></span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>args <span class="op">=</span> TrainingArguments(<span class="op">**</span>TRAINING_ARGS)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>data_collator <span class="op">=</span> DataCollatorForTokenClassification(tokenizer<span class="op">=</span>tokenizer,</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                                                   pad_to_multiple_of<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                                                   padding<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:34.170595Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:34.169733Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:34.447735Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:34.446863Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:34.170560Z&quot;}" data-trusted="true" data-execution_count="26">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>model_config <span class="op">=</span> AutoConfig.from_pretrained(MODEL_CKPT)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>model_config.update({</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"num_labels"</span>: <span class="dv">3</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cls_tokens"</span>: <span class="bu">list</span>(dtype2clstok.values()),</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"label2id"</span>: label2id,</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"id2label"</span>: {v: k <span class="cf">for</span> k, v <span class="kw">in</span> label2id.items()}</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:34.450964Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:34.449996Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:41.207113Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:41.206115Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:34.450922Z&quot;}" data-trusted="true" data-execution_count="27">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForTokenClassification.from_pretrained(MODEL_CKPT, config<span class="op">=</span>model_config)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Since we added custom tokens, we have to resize the token embeddings:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:41.213044Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:41.212813Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:42.730756Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:42.729831Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:41.213015Z&quot;}" data-trusted="true" data-execution_count="28">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>model.resize_token_embeddings(<span class="bu">len</span>(tokenizer))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="28">
+<pre><code>Embedding(128015, 768)</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:42.737813Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:42.737454Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:04:50.817239Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:04:50.816308Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:42.737775Z&quot;}" data-trusted="true" data-execution_count="29">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>trainer <span class="op">=</span> Trainer(model<span class="op">=</span>model,</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>                  args<span class="op">=</span>args,</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>                  train_dataset<span class="op">=</span>dds[<span class="st">"train"</span>],</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>                  eval_dataset<span class="op">=</span>dds[<span class="st">"test"</span>],</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>                  tokenizer<span class="op">=</span>tokenizer,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>                  data_collator<span class="op">=</span>data_collator)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Having set up the trainer, everything looks fine:</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:04:50.818913Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:04:50.818669Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:05:16.866890Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:05:16.866051Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:04:50.818879Z&quot;}" data-trusted="true" data-execution_count="30">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>trainer.evaluate()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+
+    <div>
+      
+      <progress value="420" max="210" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      [210/210 05:30]
+    </div>
+    
+</div>
+<div class="cell-output cell-output-display" data-execution_count="30">
+<pre><code>{'eval_loss': 1.0528874397277832,
+ 'eval_runtime': 26.0332,
+ 'eval_samples_per_second': 32.228,
+ 'eval_steps_per_second': 8.067}</code></pre>
+</div>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-03-24T12:05:16.868587Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-03-24T12:05:16.868066Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-03-24T12:20:43.563994Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-03-24T12:20:43.563195Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-03-24T12:05:16.868549Z&quot;}" data-trusted="true" data-execution_count="31">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>trainer.train()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+
+    <div>
+      
+      <progress value="2514" max="2514" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      [2514/2514 15:22, Epoch 3/3]
+    </div>
+    
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Epoch</th>
+<th data-quarto-table-cell-role="th">Training Loss</th>
+<th data-quarto-table-cell-role="th">Validation Loss</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>0.720800</td>
+<td>0.847753</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>0.714600</td>
+<td>0.703775</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>0.622000</td>
+<td>0.687999</td>
+</tr>
+</tbody>
+</table>
+<p>
+</p></div>
+<div class="cell-output cell-output-display" data-execution_count="31">
+<pre><code>TrainOutput(global_step=2514, training_loss=0.7359402344733263, metrics={'train_runtime': 924.097, 'train_samples_per_second': 10.882, 'train_steps_per_second': 2.72, 'total_flos': 1283172806215872.0, 'train_loss': 0.7359402344733263, 'epoch': 3.0})</code></pre>
+</div>
+</div>
+<p>And that’s it! We’ve finetuned a small DeBERTa model to predict the quality of discourse elements in student essays.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
