@@ -1,39 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://iammees.github.io/posts/tackling_tabular_02/index.html</loc>
+    <lastmod>2023-04-12T09:35:16.283Z</lastmod>
+  </url>
+  <url>
     <loc>https://iammees.github.io/posts/conformal_mapie/index.html</loc>
-    <lastmod>2023-04-12T09:31:19.413Z</lastmod>
+    <lastmod>2023-04-12T09:35:17.305Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/tackling_tabular_01/index.html</loc>
-    <lastmod>2023-04-12T09:31:21.152Z</lastmod>
+    <lastmod>2023-04-12T09:35:18.704Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_intro/index.html</loc>
-    <lastmod>2023-04-12T09:31:21.827Z</lastmod>
+    <lastmod>2023-04-12T09:35:19.367Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/covid19_mortality/index.html</loc>
-    <lastmod>2023-04-12T09:31:24.328Z</lastmod>
+    <lastmod>2023-04-12T09:35:21.900Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_sentiment/index.html</loc>
-    <lastmod>2023-04-12T09:31:25.157Z</lastmod>
+    <lastmod>2023-04-12T09:35:22.695Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/image_classification_keras/index.html</loc>
-    <lastmod>2023-04-12T09:31:26.057Z</lastmod>
+    <lastmod>2023-04-12T09:35:23.595Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/semantic_search/index.html</loc>
-    <lastmod>2023-04-12T09:31:27.382Z</lastmod>
+    <lastmod>2023-04-12T09:35:24.984Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/token_classification/index.html</loc>
-    <lastmod>2023-04-12T09:31:28.404Z</lastmod>
+    <lastmod>2023-04-12T09:35:26.110Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/index.html</loc>
-    <lastmod>2023-04-12T09:31:29.098Z</lastmod>
+    <lastmod>2023-04-12T09:35:26.904Z</lastmod>
   </url>
 </urlset>

@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-11-03">
+
+<title>iammees - Tackling Tabular Problems II: Model Validation &amp; Evaluation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Tackling Tabular Problems II: Model Validation &amp; Evaluation</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">November 3, 2022</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<section id="model-validation" class="level2">
+<h2 class="anchored" data-anchor-id="model-validation">Model Validation</h2>
+<p>A proper validation strategy is key for building a good model. Without a good validation scheme, we won’t be able to correctly evaluate a model’s prediction errors; hence, we won’t know which changes really lead to a performance improvement. Thus, investing time in designing a reliable validation scheme is crucial for the success of a project.</p>
+<p>In essence, the question of model evaluation boils down to deciding how the dataset is partitioned in samples for training and samples for validation and testing. The most basic strategy is a simple train-test split that splits the dataset into a training set (e.g., 80% of the data) and a test set. But since this strategy involves regularly checking the model’s performance on the test set, it will quickly lead to overfitting. Thus, we can improve this strategy by splitting the data into three parts (i.e., separate sets for training, validation, and testing) and use the test set only for estimating the final performance of the model on unseen data. The best practice, however, is to first put aside the test set and then use a flavor of k-fold cross-validation (CV) to evaluate the training procedure on the remaining data. This way, we further reduce the risk of overfitting and can get a more reliable estimate of the model’s performance. For a more thorough discussion of this topic, see this popular <a href="https://arxiv.org/pdf/1811.12808.pdf">paper</a>.</p>
+<section id="cv-schemes" class="level3">
+<h3 class="anchored" data-anchor-id="cv-schemes">CV Schemes</h3>
+<p>Let’s dive deeper into the different variations of k-fold CV.</p>
+<p>Note: We borrow some code from the scikit-learn <a href="https://scikit-learn.org/stable/modules/cross_validation.html">user guide</a> to visualize the different strategies.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.patches <span class="im">import</span> Patch</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> KFold, StratifiedKFold, GroupKFold, StratifiedGroupKFold</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-04-11T16:22:23.616341Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-04-11T16:22:23.615920Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-04-11T16:22:23.636519Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-04-11T16:22:23.635116Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-04-11T16:22:23.616305Z&quot;}" data-trusted="true" data-execution_count="67">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_ax(figsize<span class="op">=</span>(<span class="dv">11</span>, <span class="dv">4</span>), grid<span class="op">=</span><span class="va">False</span>, title<span class="op">=</span><span class="va">None</span>, xlabel<span class="op">=</span><span class="va">None</span>, ylabel<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    _, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>figsize)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> spine <span class="kw">in</span> [<span class="st">"top"</span>, <span class="st">"right"</span>]:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        ax.spines[spine].set_visible(<span class="va">False</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> spine <span class="kw">in</span> [<span class="st">"bottom"</span>, <span class="st">"left"</span>]:</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        ax.spines[spine].set_linewidth(<span class="fl">1.1</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> title <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        ax.set_title(title, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> xlabel <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        ax.set_xlabel(xlabel, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ylabel <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(ylabel, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ax</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># From https://scikit-learn.org/stable/auto_examples/model_selection/plot_cv_indices.html</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>cmap_data <span class="op">=</span> plt.cm.jet</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>cmap_cv <span class="op">=</span> plt.cm.gist_earth</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the class/group data</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>n_points <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.randn(<span class="dv">100</span>, <span class="dv">10</span>)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>percentiles_classes <span class="op">=</span> [<span class="fl">0.1</span>, <span class="fl">0.3</span>, <span class="fl">0.6</span>]</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.hstack([[ii] <span class="op">*</span> <span class="bu">int</span>(<span class="dv">100</span> <span class="op">*</span> perc) <span class="cf">for</span> ii, perc <span class="kw">in</span> <span class="bu">enumerate</span>(percentiles_classes)])</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate uneven groups</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>group_prior <span class="op">=</span> rng.dirichlet([<span class="dv">2</span>] <span class="op">*</span> <span class="dv">10</span>)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>groups <span class="op">=</span> np.repeat(np.arange(<span class="dv">10</span>), rng.multinomial(<span class="dv">100</span>, group_prior))</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_cv(cv, X, y, group, ax, n_splits, lw<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Create a sample plot for indices of a cross-validation object."""</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Generate the training/testing visualizations for each CV split</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ii, (tr, tt) <span class="kw">in</span> <span class="bu">enumerate</span>(cv.split(X<span class="op">=</span>X, y<span class="op">=</span>y, groups<span class="op">=</span>group)):</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Fill in indices with the training/test groups</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>        indices <span class="op">=</span> np.array([np.nan] <span class="op">*</span> <span class="bu">len</span>(X))</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>        indices[tt] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>        indices[tr] <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Visualize the results</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>        ax.scatter(</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>            <span class="bu">range</span>(<span class="bu">len</span>(indices)),</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>            [ii <span class="op">+</span> <span class="fl">0.5</span>] <span class="op">*</span> <span class="bu">len</span>(indices),</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>            c<span class="op">=</span>indices,</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>            marker<span class="op">=</span><span class="st">"_"</span>,</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>            lw<span class="op">=</span>lw,</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>            cmap<span class="op">=</span>cmap_cv,</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>            vmin<span class="op">=-</span><span class="fl">0.2</span>,</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>            vmax<span class="op">=</span><span class="fl">1.2</span>,</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot the data classes and groups at the end</span></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>    ax.scatter(<span class="bu">range</span>(<span class="bu">len</span>(X)), [ii <span class="op">+</span> <span class="fl">1.5</span>] <span class="op">*</span> <span class="bu">len</span>(X), c<span class="op">=</span>y, marker<span class="op">=</span><span class="st">"_"</span>, lw<span class="op">=</span>lw, cmap<span class="op">=</span>cmap_data)</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>    ax.scatter(<span class="bu">range</span>(<span class="bu">len</span>(X)), [ii <span class="op">+</span> <span class="fl">2.5</span>] <span class="op">*</span> <span class="bu">len</span>(X), c<span class="op">=</span>group, marker<span class="op">=</span><span class="st">"_"</span>, lw<span class="op">=</span>lw, cmap<span class="op">=</span>cmap_data)</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Formatting</span></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>    yticklabels <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(n_splits)) <span class="op">+</span> [<span class="st">"class"</span>, <span class="st">"group"</span>]</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>    ax.<span class="bu">set</span>(</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>        yticks<span class="op">=</span>np.arange(n_splits <span class="op">+</span> <span class="dv">2</span>) <span class="op">+</span> <span class="fl">0.5</span>,</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>        yticklabels<span class="op">=</span>yticklabels,</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>        xlabel<span class="op">=</span><span class="st">"Sample index"</span>,</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>        ylabel<span class="op">=</span><span class="st">"CV iteration"</span>,</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>        ylim<span class="op">=</span>[n_splits <span class="op">+</span> <span class="fl">2.2</span>, <span class="op">-</span><span class="fl">0.2</span>],</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>        xlim<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">100</span>],</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="bu">str</span>(<span class="bu">type</span>(cv).<span class="va">__name__</span>), fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ax</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="k-fold-cv" class="level4">
+<h4 class="anchored" data-anchor-id="k-fold-cv">k-fold CV</h4>
+<p>The most used version of <span class="math inline">\(k\)</span>-fold CV is implemented in scikit-learn’s <code>KFold</code> cross-validator.<code>KFold</code> simply splits the dataset into <span class="math inline">\(k\)</span> partitions (where <span class="math inline">\(k\)</span> is typically between <span class="math inline">\(3\)</span> and <span class="math inline">\(10\)</span>). Then, in <span class="math inline">\(k\)</span> iterations, one of the <span class="math inline">\(k\)</span> partitions (or “folds”) is used as a validation set while the others are used as a training set for the model (i.e., the model is trained on <span class="math inline">\(k-1\)</span> folds in every iteration). Eventually, we’ll end up with predictions for every observation in the dataset (the so-called out-of-fold predictions, or oof in short, because in each iteration the model only predicts samples it has not seen during training). To obtain the overall CV score, we simply average the <span class="math inline">\(k\)</span> validation scores.</p>
+<p>The plot below shows the basic k-fold CV scheme with <span class="math inline">\(4\)</span> folds. Note that the class and group structure of the data is ignored.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-04-11T16:22:24.114317Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-04-11T16:22:24.113318Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-04-11T16:22:24.330152Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-04-11T16:22:24.329062Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-04-11T16:22:24.114267Z&quot;}" data-trusted="true" data-execution_count="68">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">3</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>n_splits <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> KFold(n_splits)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>plot_cv(cv, X, y, groups, ax, n_splits)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-4-output-1.png" class="quarto-discovered-preview-image img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="stratified-k-fold-cv" class="level4">
+<h4 class="anchored" data-anchor-id="stratified-k-fold-cv">Stratified k-fold CV</h4>
+<p>In practice, it is often the case that there are some classes in the data (in the target and/or in features) that appear (much) less frequently than others. A typical example for an imbalanced target is transaction data where we have to predict the very rare event of a fraudulent transaction. In situations like this we’ll want to preserve the class distribution in our validation scheme using <em>stratified</em> k-fold CV.</p>
+<p>The plot below shows this strategy using scikit-learn’s <code>StratifiedKFold</code> (stratified on the imbalanced target <code>y</code> which has three classes).</p>
+<p>Note that the same approach can be used in regression problems with skewed variables or variables that have long tails. To preserve the variable’s distribution across folds we can simply stratify on a discretized version of that variable. If we need to preserve the distribution of multiple variables, we can use iterative stratification (an implementation can be found <a href="http://scikit.ml/api/skmultilearn.model_selection.iterative_stratification.html#module-skmultilearn.model_selection.iterative_stratification">here</a>).</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-04-11T16:22:24.997120Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-04-11T16:22:24.995216Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-04-11T16:22:25.208766Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-04-11T16:22:25.207744Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-04-11T16:22:24.997066Z&quot;}" data-trusted="true" data-execution_count="69">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">3</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>n_splits <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> StratifiedKFold(n_splits)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>plot_cv(cv, X, y, groups, ax, n_splits)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-5-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="group-k-fold-cv" class="level4">
+<h4 class="anchored" data-anchor-id="group-k-fold-cv">Group k-fold CV</h4>
+<p>Another common issue concerns non-i.i.d. data. As an example, consider a dataset with data about many different users and multiple observations per user. If there are observations of a user in both the training and the validation data, we’ll overestimate the model’s performance on unseen users. Thus, we’ll want to make sure that groups in the data appear either in the training or in the validation samples, but not in both. This functionality is implemented in scikit-learn’s <code>GroupKFold</code>. Note that such groups in the data may only be revealed by thorough analysis (e.g., using cluster analysis) and leveraging domain knowledge.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-04-11T16:22:26.057958Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-04-11T16:22:26.057569Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-04-11T16:22:26.273817Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-04-11T16:22:26.272796Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-04-11T16:22:26.057924Z&quot;}" data-trusted="true" data-execution_count="70">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">3</span>))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>n_splits <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> GroupKFold(n_splits)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>plot_cv(cv, X, y, groups, ax, n_splits)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-6-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="stratified-group-k-fold-cv" class="level4">
+<h4 class="anchored" data-anchor-id="stratified-group-k-fold-cv">Stratified group k-fold CV</h4>
+<p>Naturally, we may face a problem where want to preserve the distribution of a variable <em>and</em> split on groups. This can be done using scikit-learn’s <code>StratifiedGroupKFold</code>. Note: If the distribution of classes in each group is relatively close it is better to use <code>GroupKFold</code>.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-04-11T16:22:27.501345Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-04-11T16:22:27.500975Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-04-11T16:22:27.720001Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-04-11T16:22:27.718750Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-04-11T16:22:27.501311Z&quot;}" data-trusted="true" data-execution_count="71">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">3</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>n_splits <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> StratifiedGroupKFold(n_splits)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>plot_cv(cv, X, y, groups, ax, n_splits)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-7-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="shuffling" class="level4">
+<h4 class="anchored" data-anchor-id="shuffling">Shuffling</h4>
+<p>In the examples above, the data wasn’t shuffled before the partitioning of the data. But if the ordering of the data is not arbitrary (e.g., if the observations are ordered by class), shuffling is usually necessary (just set <code>shuffle=True</code> when instantiating the cross-validator). However, care must be taken if there is a time dimension in the data (e.g., multiple observations of a physical process that are close in time). In this case, shuffling the data may put samples in the validation set that are very similar to the ones in the training set.</p>
+</section>
+<section id="nested-cv" class="level4">
+<h4 class="anchored" data-anchor-id="nested-cv">Nested CV</h4>
+<p>We generally shouldn’t use the same data for optimizing the hyperparameters of a model and evaluating its performance. This is where nested CV comes in. The idea is simple: We’ll still use an outer loop that splits the dataset into <span class="math inline">\(k\)</span> folds at each iteration. But we’ll also use an inner loop that splits the data again to get a new set of samples for training and validation in each (inner) iteration. Since the hyperparameter tuning only happens with respect to the data exposed by the outer loop, the risk of overfitting is reduced. However, this comes at the price of much higher computational effort and a reduced amount of available training data. Thus, we’ll often resort to using the same CV scheme for both model/parameter search and model evaluation even though this poses a higher risk of overfitting.</p>
+</section>
+</section>
+<section id="adverserial-validation" class="level3">
+<h3 class="anchored" data-anchor-id="adverserial-validation">Adverserial validation</h3>
+<p>While adverserial validation is not a classic validation strategy, it can be really helpful to determine the reliability of an existing validation scheme. For example, we may be unsure whether we really picked a representative sample of our dataset for testing our model. To answer this question, we can follow a simple procedure: Concatenate the training and the test data, delete the target column, add a binary column indicating whether a row comes from the training or the test set, and train a classifier (e.g., a Random Forest) to predict this new target. Ideally, the resulting classifier will have a ROC-AUC around <span class="math inline">\(0.5\)</span> meaning that it cannot tell both datasets apart. A ROC-AUC closer to <span class="math inline">\(1.0\)</span> would instead indicate that the training and the test data come from different distributions and that our validation method isn’t robust. Note that we can use the same approach to detect concept drift (i.e., changing patterns and relations over time) in our data.</p>
+</section>
+<section id="avoiding-data-leaks" class="level3">
+<h3 class="anchored" data-anchor-id="avoiding-data-leaks">Avoiding data leaks</h3>
+<p>No matter which specific validation strategy is chosen, it is imperative to avoid information leaks from the training data to the validation/test data. There are multiple potential sources for these leaks, common ones are: - Preprocessing: Preprocessing methods (e.g., normalization, target encoding, dimensionality reduction) have to be fitted exclusively on the training set. If a preprocessing method modifies the entire data (i.e., before it is partitioned into training, validation, and test data), information inevitably leaks from the training data. - Availability of features: The dataset may contain features that are not available at inference time. This probably sounds obvious but can be complicated in practice (e.g., sensor data may be collected before a prediction has to be made but won’t become available in time), and has to be fixed (either by dropping the feature or making sure that it is available). - Groups: This was already discussed, but finding these groups can be very hard. Imagine a dataset containing some kind of rating created by human evaluators. If the rows are sorted by evaluator (and the ratings aren’t perfectly objective), there is a leak in the ordering of the observations.</p>
+</section>
+</section>
+<section id="metrics" class="level2">
+<h2 class="anchored" data-anchor-id="metrics">Metrics</h2>
+<p>Choosing the right metric(s) is important in any ML task. While we may first think of the typical (mathematical) metrics for evaluating the predictive performance of a model (i.e., metrics that compare the predictions and the ground truth to compute a score), there are usually a lot of other relevant metrics in a project. Some examples are: - interpretability of the model - maintainability of the model - memory and compute requirements - training and inference costs - latency of the inference process - time for development</p>
+<p>Which criteria matter the most heavily depends on the project.</p>
+<p>Here, we’ll take a brief look at the most common (mathematical) evaluation metrics for regression and classification. But first, some general remarks about evaluation metrics: - The metric should be chosen according to the requirements of the project. For instance, if it is more important to avoid underestimation than overestimation, the metric should reflect this. Also, it is always possible to check multiple metrics. - In an ideal setting, the evaluation metric matches the objective function used by the model. Note that GBDTs and deep learning models generally allow custom objective functions. - If the evaluation metric doesn’t match the objective function, it is essential to at least tune the hyperparameters of the model based on the metric we really care about.</p>
+<section id="metrics-for-regression" class="level3">
+<h3 class="anchored" data-anchor-id="metrics-for-regression">Metrics for regression</h3>
+<section id="mean-squared-error-mse" class="level4">
+<h4 class="anchored" data-anchor-id="mean-squared-error-mse">Mean squared error (MSE)</h4>
+<p>The MSE is the mean of the sum of squared errors (SSE). To compute the SSE we simply sum the squared differences between the predictions and the ground truth. Since regression models typically minimize the SSE, it is usually straightforward to minimize the MSE. Expressed mathematically:</p>
+<p><span class="math display">\[\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 = \frac{1}{n}\text{SSE},\]</span></p>
+<p>where <span class="math inline">\(y_i\)</span> represents the ground truth, and <span class="math inline">\(\hat{y}_i\)</span> the prediction.</p>
+</section>
+<section id="root-mean-squared-error-rmse" class="level4">
+<h4 class="anchored" data-anchor-id="root-mean-squared-error-rmse">Root mean squared error (RMSE)</h4>
+<p>RMSE is the square root of the MSE, and often used in regression problems. It is generally preferred for two reasons: - its value is on the original scale of the target (since we take the <em>root</em> of <em>squared</em> errors), allowing a more intuitive understanding - it penalizes large prediction errors to a lesser extent than MSE (again, due to taking the square root)</p>
+<p>Expressed mathematically:</p>
+<p><span class="math display">\[\text{RMSE} = \sqrt{\text{MSE}} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}.\]</span></p>
+<p>In practice, it may work better to take the square root of the target and use MSE as objective function (squaring the results afterwards).</p>
+</section>
+<section id="r-squared-r2" class="level4">
+<h4 class="anchored" data-anchor-id="r-squared-r2">R squared (<span class="math inline">\(R^2\)</span>)</h4>
+<p>The <span class="math inline">\(R^2\)</span> metric compares the squared errors of the model against the squared errors when predicting the mean of the target (which is also known as the sum of squares total, SST). Expressed mathematically:</p>
+<p><span class="math display">\[R^2 = \sum_{i=1}^{n} \frac{(y_i - \hat{y}_i)^2}{(y_i - \bar{y})^2} = \frac{\text{SSE}}{\text{SST}},\]</span></p>
+<p>where <span class="math inline">\(\bar{y}\)</span> represents the mean of the target.</p>
+</section>
+<section id="root-mean-squared-log-error-rmsle" class="level4">
+<h4 class="anchored" data-anchor-id="root-mean-squared-log-error-rmsle">Root mean squared log error (RMSLE)</h4>
+<p>RMSLE is another extension of the MSE and a good choice when we care about the scale of our predictions with respect to the scale of the ground truth (due to taking the logarithm, we focus on the relative error between the predicted and the actual values). Note that RMSLE penalizes underestimation more than overestimation. Expressed mathematically:</p>
+<p><span class="math display">\[\text{RMSLE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} \left( \log(\hat{y}_i + 1) - \log(y_i + 1) \right)^2},\]</span></p>
+<p>where <span class="math inline">\(\log(x)\)</span> means the natural logarithm of <span class="math inline">\(x\)</span>.</p>
+<p>In practice, it may work better to take the logarithm of the target before fitting the model (putting the results back on the original scale using the exponential function afterwards).</p>
+</section>
+<section id="mean-absolute-error-mae" class="level4">
+<h4 class="anchored" data-anchor-id="mean-absolute-error-mae">Mean absolute error (MAE)</h4>
+<p>The MAE represents the mean of the absolute differences between the predictions and the ground truth. It is on the original scale of the target and less sensitive to outliers (given that there is no squaring operation). Expressed mathematically:</p>
+<p><span class="math display">\[\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} \lvert y_i - \hat{y}_i \rvert\]</span></p>
+</section>
+</section>
+<section id="metrics-for-binary-classification" class="level3">
+<h3 class="anchored" data-anchor-id="metrics-for-binary-classification">Metrics for binary classification</h3>
+<section id="accuracy" class="level4">
+<h4 class="anchored" data-anchor-id="accuracy">Accuracy</h4>
+<p>Accuracy, the number of correct predictions as a ratio of all predictions, is the simplest metric for binary classification problems. However, it is only easily interpretable when there is no class imbalance. For instance, if the minority class makes up only 5% of the data, a model that only predicts the majority class will have an accuracy of 95%. Expressed mathematically:</p>
+<p><span class="math display">\[\text{Accuracy} = \frac{\text{correct predictions}}{\text{total predictions}}\]</span></p>
+</section>
+<section id="precision-and-recall" class="level4">
+<h4 class="anchored" data-anchor-id="precision-and-recall">Precision and recall</h4>
+<p>The metrics of precision and recall usually provide a better picture than accuracy. To understand them, consider the following four quantities: - True positives (TP): True positives are examples that have been correctly predicted as positive ones (i.e., as belonging to some class). - False positives (FP): False positives are examples that have been incorrectly predicted as positives. - True negatives (TN): True negatives are examples that have been correctly predicted as negative ones (i.e., as not belonging to some class). - False negatives (FN): False negatives are examples that have been incorrectly predicted as negatives.</p>
+<p>Example: Consider a classifier that should recognize dogs in pictures of dogs and cats. In a picture with five dogs and three cats, a program correctly detects four dogs (true positives), misses one (false negative), incorrectly detects a dog that is actually a cat (false positive), and correctly excludes two cats (true negatives).</p>
+<p>We can use these quantities to compute the accuracy:</p>
+<p><span class="math display">\[\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}.\]</span></p>
+<p>However, we can also compute other metrics that can give us a better understanding of the performance of a classifier.</p>
+<p>Precision (also called specificity) is the accuracy of the positive cases, telling us how often the classifier is correct when predicting a positive. Optimizing for precision means that the model should only predict the positive class if it is very confident.</p>
+<p><span class="math display">\[\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}\]</span></p>
+<p>Recall (also called sensitivity, true positive rate, or coverage), on the other hand, measures the fraction of positive cases that have been correctly predicted:</p>
+<p><span class="math display">\[\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}\]</span></p>
+</section>
+<section id="f1-score" class="level4">
+<h4 class="anchored" data-anchor-id="f1-score">F1 score</h4>
+<p>In general, there is a trade-off between precision and recall. By altering the threshold for predicting the positive or the negative class (usually set at a probability of <span class="math inline">\(0.5\)</span>) we can improve one of the metrics at the expense of the other. Thus, both metrics always have to be considered together.</p>
+<p>To make things easier, the commonly used F1 score provides the harmonic mean of precision and recall:</p>
+<p><span class="math display">\[\text{F1} = 2 \cdot\ \frac{\text{precision} \cdot \text{recall}}{\text{precision} + \text{recall}}.\]</span></p>
+<p>An alternative is the F-beta score where beta influences the weight of recall in the score:</p>
+<p><span class="math display">\[F_{\beta} = \frac{(1 + \beta^2)\cdot(\text{precision} \cdot \text{recall})}{(\beta^2 \cdot \text{precision} + \text{recall})}\]</span></p>
+</section>
+<section id="log-loss" class="level4">
+<h4 class="anchored" data-anchor-id="log-loss">Log loss</h4>
+<p>Log loss, also known as cross-entropy and a commonly used metric, measures the difference between the predicted probability and the ground truth probability. Thus, log loss considers the confidence of the classifier. Expressed mathematically:</p>
+<p><span class="math display">\[\text{Log loss} = -\frac{1}{n} \sum_{i=1}^{n} \left[ y_i \log(\hat{y}_i) + (1- y_{i})\log (1 - \hat{y}_t) \right]\]</span></p>
+</section>
+<section id="roc-auc" class="level4">
+<h4 class="anchored" data-anchor-id="roc-auc">ROC-AUC</h4>
+<p>Plotting the true positive rate (i.e., recall) against the false positive rate (i.e., the ratio of negative examples that are incorrectly classified as positive ones) gives the so-called receiver operating characteristic curve (ROC curve). While the ROC curve of a bad classifier will be near the diagonal of the chart (the diagonal represents a classifier with random predictions), the area under the curve (AUC) of a good classifier will be significantly higher (ideally 1.0). ROC-AUC, as the corresponding metric is called, is very common in practice.</p>
+</section>
+</section>
+<section id="metrics-for-multi-class-classification" class="level3">
+<h3 class="anchored" data-anchor-id="metrics-for-multi-class-classification">Metrics for multi-class classification</h3>
+<p>For multi-class classification we can simply apply a metric for binary classification to each class and compute an average. Three common averaging strategies are:</p>
+<ul>
+<li>Macro averaging: Compute the metric for each class and then average the results. This approach treats all classes equally.</li>
+<li>Micro averaging: Sum the metrics for each class. This approach is preferable if there is class imbalance.</li>
+<li>Weighting: Compute the metric for each class and then a weighted average of the results. Allows to put more emphasis on more relevant classes or to adjust for class imbalance.</li>
+</ul>
+<p>Correspondingly, common metrics for multi-class classification are:</p>
+<ul>
+<li>Macro-F1 and Micro-F1</li>
+<li>Multiclass log loss</li>
+<li>Multiclass accuracy</li>
+</ul>
+</section>
+</section>
+<section id="example-rocket-league" class="level2">
+<h2 class="anchored" data-anchor-id="example-rocket-league">Example: Rocket League</h2>
+<section id="setting-up-the-cv-scheme" class="level3">
+<h3 class="anchored" data-anchor-id="setting-up-the-cv-scheme">Setting up the CV scheme</h3>
+<p>Let’s continue working with the Rocket League problem. As we saw during EDA, we certainly have groups: the games themselves and the events in the games. Since our classifier should work with games it hasn’t seen before, we should use a <code>GroupKFold</code> with the games as groups. Stratifying based on the target column probably won’t be necessary due to the large size of the dataset.</p>
+<p>Below we’ll setup a basic CV scheme using a <code>RandomForestClassifier</code> (from <code>cuml</code> for GPU acceleration) as our model. Our metric will be the log loss.</p>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-04-11T16:11:32.115961Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-04-11T16:11:32.115557Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-04-11T16:11:37.058062Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-04-11T16:11:37.056890Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-04-11T16:11:32.115922Z&quot;}" data-trusted="true" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> GroupKFold</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> log_loss</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cuml.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-04-11T16:11:37.069625Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-04-11T16:11:37.068702Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-04-11T16:11:42.704258Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-04-11T16:11:42.703164Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-04-11T16:11:37.069581Z&quot;}" data-trusted="true" data-execution_count="8">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> pd.read_feather(<span class="st">"train.feather"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2023-04-11T16:11:42.707259Z&quot;,&quot;iopub.status.busy&quot;:&quot;2023-04-11T16:11:42.706970Z&quot;,&quot;iopub.status.idle&quot;:&quot;2023-04-11T16:13:13.062138Z&quot;,&quot;shell.execute_reply&quot;:&quot;2023-04-11T16:13:13.060933Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2023-04-11T16:11:42.707232Z&quot;}" data-trusted="true" data-execution_count="9">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> GroupKFold(n_splits<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>oof <span class="op">=</span> np.zeros(train_df.shape[<span class="dv">0</span>])</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="st">"team_A_scoring_within_10sec"</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>features <span class="op">=</span> [col <span class="cf">for</span> col <span class="kw">in</span> train_df <span class="cf">if</span> col <span class="kw">not</span> <span class="kw">in</span> [<span class="st">"game_num"</span>, <span class="st">"event_id"</span>, <span class="st">"event_time"</span>, <span class="st">"team_A_scoring_within_10sec"</span>, <span class="st">"team_B_scoring_within_10sec"</span>]]</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> []</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fold, (train_idx, valid_idx) <span class="kw">in</span> <span class="bu">enumerate</span>(cv.split(train_df, groups<span class="op">=</span>train_df.game_num)):</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    X_train <span class="op">=</span> train_df.iloc[train_idx][features]</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    y_train <span class="op">=</span> train_df.iloc[train_idx][target]</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    X_valid <span class="op">=</span> train_df.iloc[valid_idx][features]</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    y_valid <span class="op">=</span> train_df.iloc[valid_idx][target]</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> RandomForestClassifier()</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    model.fit(X_train, y_train)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    oof_preds <span class="op">=</span> model.predict_proba(X_valid)[:, <span class="dv">1</span>]</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    oof[valid_idx] <span class="op">=</span> oof_preds</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    score <span class="op">=</span> log_loss(y_valid.values, oof_preds)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Fold </span><span class="sc">{</span>fold<span class="sc">}</span><span class="ss"> score: </span><span class="sc">{</span>score<span class="sc">:.5f}</span><span class="ss">"</span>)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    scores.append(score)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> X_train, X_valid, y_train, y_valid, model, oof_preds, score</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    gc.collect()</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"CV score: </span><span class="sc">{</span>np<span class="sc">.</span>mean(scores)<span class="sc">:.5f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Fold 0 score: 0.20371
+Fold 1 score: 0.20082
+Fold 2 score: 0.19778
+Fold 3 score: 0.19712
+Fold 4 score: 0.19781
+CV score: 0.19945</code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
