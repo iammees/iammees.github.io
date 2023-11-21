@@ -341,14 +341,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="avoiding-data-leaks" class="level3">
 <h3 class="anchored" data-anchor-id="avoiding-data-leaks">Avoiding data leaks</h3>
-<p>No matter which specific validation strategy is chosen, it is imperative to avoid information leaks from the training data to the validation/test data. There are multiple potential sources for these leaks, common ones are: - Preprocessing: Preprocessing methods (e.g., normalization, target encoding, dimensionality reduction) have to be fitted exclusively on the training set. If a preprocessing method modifies the entire data (i.e., before it is partitioned into training, validation, and test data), information inevitably leaks from the training data. - Availability of features: The dataset may contain features that are not available at inference time. This probably sounds obvious but can be complicated in practice (e.g., sensor data may be collected before a prediction has to be made but won’t become available in time), and has to be fixed (either by dropping the feature or making sure that it is available). - Groups: This was already discussed, but finding these groups can be very hard. Imagine a dataset containing some kind of rating created by human evaluators. If the rows are sorted by evaluator (and the ratings aren’t perfectly objective), there is a leak in the ordering of the observations.</p>
+<p>No matter which specific validation strategy is chosen, it is imperative to avoid information leaks from the training data to the validation/test data. There are multiple potential sources for these leaks, common ones are:</p>
+<ul>
+<li>Preprocessing: Preprocessing methods (e.g., normalization, target encoding, dimensionality reduction) have to be fitted exclusively on the training set. If a preprocessing method modifies the entire data (i.e., before it is partitioned into training, validation, and test data), information inevitably leaks from the training data.</li>
+<li>Availability of features: The dataset may contain features that are not available at inference time. This probably sounds obvious but can be complicated in practice (e.g., sensor data may be collected before a prediction has to be made but won’t become available in time), and has to be fixed (either by dropping the feature or making sure that it is available).</li>
+<li>Groups: This was already discussed, but finding these groups can be very hard. Imagine a dataset containing some kind of rating created by human evaluators. If the rows are sorted by evaluator (and the ratings aren’t perfectly objective), there is a leak in the ordering of the observations.</li>
+</ul>
 </section>
 </section>
 <section id="metrics" class="level2">
 <h2 class="anchored" data-anchor-id="metrics">Metrics</h2>
-<p>Choosing the right metric(s) is important in any ML task. While we may first think of the typical (mathematical) metrics for evaluating the predictive performance of a model (i.e., metrics that compare the predictions and the ground truth to compute a score), there are usually a lot of other relevant metrics in a project. Some examples are: - interpretability of the model - maintainability of the model - memory and compute requirements - training and inference costs - latency of the inference process - time for development</p>
+<p>Choosing the right metric(s) is important in any ML task. While we may first think of the typical (mathematical) metrics for evaluating the predictive performance of a model (i.e., metrics that compare the predictions and the ground truth to compute a score), there are usually a lot of other relevant metrics in a project. Some examples are:</p>
+<ul>
+<li>interpretability of the model</li>
+<li>maintainability of the model</li>
+<li>memory and compute requirements</li>
+<li>training and inference costs</li>
+<li>latency of the inference process</li>
+<li>time for development</li>
+</ul>
 <p>Which criteria matter the most heavily depends on the project.</p>
-<p>Here, we’ll take a brief look at the most common (mathematical) evaluation metrics for regression and classification. But first, some general remarks about evaluation metrics: - The metric should be chosen according to the requirements of the project. For instance, if it is more important to avoid underestimation than overestimation, the metric should reflect this. Also, it is always possible to check multiple metrics. - In an ideal setting, the evaluation metric matches the objective function used by the model. Note that GBDTs and deep learning models generally allow custom objective functions. - If the evaluation metric doesn’t match the objective function, it is essential to at least tune the hyperparameters of the model based on the metric we really care about.</p>
+<p>Here, we’ll take a brief look at the most common (mathematical) evaluation metrics for regression and classification. But first, some general remarks about evaluation metrics:</p>
+<ul>
+<li>The metric should be chosen according to the requirements of the project. For instance, if it is more important to avoid underestimation than overestimation, the metric should reflect this. Also, it is always possible to check multiple metrics.</li>
+<li>In an ideal setting, the evaluation metric matches the objective function used by the model. Note that GBDTs and deep learning models generally allow custom objective functions.</li>
+<li>If the evaluation metric doesn’t match the objective function, it is essential to at least tune the hyperparameters of the model based on the metric we really care about.</li>
+</ul>
 <section id="metrics-for-regression" class="level3">
 <h3 class="anchored" data-anchor-id="metrics-for-regression">Metrics for regression</h3>
 <section id="mean-squared-error-mse" class="level4">
@@ -392,7 +410,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="precision-and-recall" class="level4">
 <h4 class="anchored" data-anchor-id="precision-and-recall">Precision and recall</h4>
-<p>The metrics of precision and recall usually provide a better picture than accuracy. To understand them, consider the following four quantities: - True positives (TP): True positives are examples that have been correctly predicted as positive ones (i.e., as belonging to some class). - False positives (FP): False positives are examples that have been incorrectly predicted as positives. - True negatives (TN): True negatives are examples that have been correctly predicted as negative ones (i.e., as not belonging to some class). - False negatives (FN): False negatives are examples that have been incorrectly predicted as negatives.</p>
+<p>The metrics of precision and recall usually provide a better picture than accuracy. To understand them, consider the following four quantities:</p>
+<ul>
+<li>True positives (TP): True positives are examples that have been correctly predicted as positive ones (i.e., as belonging to some class).</li>
+<li>False positives (FP): False positives are examples that have been incorrectly predicted as positives.</li>
+<li>True negatives (TN): True negatives are examples that have been correctly predicted as negative ones (i.e., as not belonging to some class).</li>
+<li>False negatives (FN): False negatives are examples that have been incorrectly predicted as negatives.</li>
+</ul>
 <p>Example: Consider a classifier that should recognize dogs in pictures of dogs and cats. In a picture with five dogs and three cats, a program correctly detects four dogs (true positives), misses one (false negative), incorrectly detects a dog that is actually a cat (false positive), and correctly excludes two cats (true negatives).</p>
 <p>We can use these quantities to compute the accuracy:</p>
 <p><span class="math display">\[\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}.\]</span></p>
