@@ -136,27 +136,27 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="simpsons-paradox">Simpson’s Paradox</h2>
 <p>Suppose that until recently, no treatment had been available for some unnamed disease. However, two newly developed treatments, treatment <span class="math inline">\(A\)</span> and treatment <span class="math inline">\(B\)</span>, have shown promise in clinical trials and since became available to medical professionals. While treatment <span class="math inline">\(A\)</span> is a surgical procedure, treatment <span class="math inline">\(B\)</span> is a small molecule drug that blocks a key protein involved in the disease process.</p>
 <p>Our task is to analyze the following table which shows the condition of the patient at the time the treatment was decided as well as the corresponding success rates and case counts. Note that, due to supply chain and production issues, treatment <span class="math inline">\(B\)</span> is more scarce than treatment <span class="math inline">\(A\)</span>.</p>
-<div class="quarto-figure quarto-figure-left">
+<div id="fig-simpson" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
 <p><img src="simpsons_paradox_table.png" class="quarto-discovered-preview-image img-fluid figure-img" width="400"></p>
-<p></p><figcaption class="figure-caption">Treatment data as an example of Simpson’s paradox</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;1: Fictional treatment data showing Simpson’s paradox</figcaption><p></p>
 </figure>
 </div>
 <p>We can see that treatment <span class="math inline">\(B\)</span> had a better recovery rate than treatment <span class="math inline">\(A\)</span> for patients with mild cases (91.3% vs 86.8%), as well as patients with severe cases (80.0% vs 71.4%). However, in the whole population, the patients who were treated with treatment <span class="math inline">\(A\)</span> had a better recovery rate than the patients treated with treatment <span class="math inline">\(B\)</span> (85.3% vs 81.4%). This is an example of <strong>Simpson’s paradox</strong>, a statistical phenomenon in which a statistical association that holds for an entire population is reversed in every subpopulation.</p>
 <p>If we had to make the decision which treatment to recommend for a patient, how should we interpret the data? Should we recommend treatment <span class="math inline">\(A\)</span> if we don’t know the condition of the patient and <span class="math inline">\(B\)</span> if we do? That can’t be right; a patient has to be either a mild or a severe case even if we don’t know the condition and <span class="math inline">\(B\)</span> apparently is superior for both conditions. So should we just rely on the segregated data because the success rates of the subpopulations provide more specific information or should we only consult the aggregated success rate because it is more general? In short, which is better: treatment <span class="math inline">\(A\)</span> or treatment <span class="math inline">\(B\)</span>?</p>
 <p>It turns out that we cannot answer this question with pure statistics. Without knowing the causal structure of the data, we simply cannot tell whether we should prefer treatment <span class="math inline">\(A\)</span> or treatment <span class="math inline">\(B\)</span>. To understand this key point, let’s consider two different scenarios.</p>
 <p><strong>Scenario 1</strong>: In scenario 1, the patient’s condition <span class="math inline">\(C\)</span> is a cause of both the treatment <span class="math inline">\(T\)</span> and the outcome <span class="math inline">\(Y\)</span> (i.e., the recovery of the patient). This would be the case when doctors decide to reserve treatment <span class="math inline">\(B\)</span> for patients with severe conditions (e.g., because it is more expensive or less invasive or both). Then, having a severe condition would cause patients to be less likely to recover (simply because of their condition) <em>and</em> more likely to receive treatment <span class="math inline">\(B\)</span>. It follows that treatment <span class="math inline">\(B\)</span> will be associated with a lower success rate in the entire population just because the patient’s condition is a common cause of both the treatment and the outcome. We say that condition <strong>confounds</strong> the effect of treatment on recovery. We can correct for this <strong>confounding</strong> by analyzing the relationship of <span class="math inline">\(T\)</span> and <span class="math inline">\(Y\)</span> among patients with the same condition. In our example, this would mean that treatment <span class="math inline">\(B\)</span> is the better treatment because it leads to a higher recovery rate in both subpopulations (i.e., the subpopulations with mild and severe cases, respectively). We can visualize the causal structure of this scenario with the following graph:</p>
-<div class="quarto-figure quarto-figure-left">
+<div id="fig-scenario1" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
 <p><img src="simpsons_paradox_scenario1.png" class="img-fluid figure-img" width="170"></p>
-<p></p><figcaption class="figure-caption">Causal diagram of scenario 1</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;2: Causal diagram of scenario 1</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Scenario 2</strong>: In scenario 2, the <em>prescription</em> of treatment <span class="math inline">\(T\)</span> is a cause of both the patient’s condition <span class="math inline">\(C\)</span> and the outcome <span class="math inline">\(Y\)</span>. This would be the case, for example, when the supply chain issues of treatment <span class="math inline">\(B\)</span> lead to a time delay between the prescription and the reception of the treatment, while treatment <span class="math inline">\(A\)</span> can be applied instantaneously. If the severity of the disease worsens over time, this would mean that the assignment of treatment <span class="math inline">\(B\)</span> can cause patients to transition from mild to severe cases of the disease, ultimately causing a lower recovery rate. In that case we could conclude that, even though treatment <span class="math inline">\(B\)</span> might be more effective than treatment <span class="math inline">\(A\)</span> once received by the patient, prescribing treatment <span class="math inline">\(A\)</span> is overall more effective. The causal diagram highlights the difference to scenario 1:</p>
-<div class="quarto-figure quarto-figure-left">
+<div id="fig-scenario2" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
 <p><img src="simpsons_paradox_scenario2.png" class="img-fluid figure-img" width="170"></p>
-<p></p><figcaption class="figure-caption">Causal diagram of scenario 2</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;3: Causal diagram of scenario 2</figcaption><p></p>
 </figure>
 </div>
 <p>What should we make of this? Comparing both scenarios shows that, without knowing the story behind the data it is impossible to determine which treatment is better. It was only after considering the causal mechanisms generating the data that we were able to make a correct conclusion. Viewed that way, the apparent Simpson’s paradox isn’t actually a paradox; it merely shows impressively that making causal claims requires making causal assumptions.</p>
@@ -164,10 +164,10 @@ ul.task-list li input[type="checkbox"] {
 <section id="association-and-causation" class="level2">
 <h2 class="anchored" data-anchor-id="association-and-causation">Association and Causation</h2>
 <p>Whether you have engaged in some data analysis yourself or followed a heated discussion about the correct way to interpret some data on Twitter, you have likely heard of the mantra “correlation doesn’t imply causation.” To see what this means, let’s have a look at an example. As it turns out, the yearly number of non-commercial space launches has a high degree of correlation with the yearly number of sociology doctorates awarded in the United States.</p>
-<div class="quarto-figure quarto-figure-left">
+<div id="fig-spurious" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
 <p><img src="spurious_correlation.png" class="img-fluid figure-img" width="800"></p>
-<p></p><figcaption class="figure-caption">Correlation of non-commercial space launches and sociology doctorates awarded in the US</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;4: Correlation of non-commercial space launches and sociology doctorates awarded in the US, courtesy of <a href="https://www.tylervigen.com/spurious-correlations">tylervigen.com</a></figcaption><p></p>
 </figure>
 </div>
 <p>We can probably agree there are no causal relationships at play here, meaning that this is a spurious correlation. Many more examples like this, showcasing fun but meaningless correlations, can be found on Tyler Vigen’s very entertaining website <a href="https://www.tylervigen.com/spurious-correlations">spurious correlations</a>.</p>
