@@ -149,14 +149,14 @@ ul.task-list li input[type="checkbox"] {
 <div id="fig-scenario1" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
 <p><img src="simpsons_paradox_scenario1.png" class="img-fluid figure-img" width="170"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;2: Causal diagram of scenario 1</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;2: Causal diagram of scenario 1: <span class="math inline">\(C\)</span> is a common cause of <span class="math inline">\(T\)</span> and <span class="math inline">\(Y\)</span></figcaption><p></p>
 </figure>
 </div>
 <p><strong>Scenario 2</strong>: In scenario 2, the <em>prescription</em> of treatment <span class="math inline">\(T\)</span> is a cause of both the patient’s condition <span class="math inline">\(C\)</span> and the outcome <span class="math inline">\(Y\)</span>. This would be the case, for example, when the supply chain issues of treatment <span class="math inline">\(B\)</span> lead to a time delay between the prescription and the reception of the treatment, while treatment <span class="math inline">\(A\)</span> can be applied instantaneously. If the severity of the disease worsens over time, this would mean that the assignment of treatment <span class="math inline">\(B\)</span> can cause patients to transition from mild to severe cases of the disease, ultimately causing a lower recovery rate. In that case we could conclude that, even though treatment <span class="math inline">\(B\)</span> might be more effective than treatment <span class="math inline">\(A\)</span> once received by the patient, prescribing treatment <span class="math inline">\(A\)</span> is overall more effective. The causal diagram highlights the difference to scenario 1:</p>
 <div id="fig-scenario2" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
 <p><img src="simpsons_paradox_scenario2.png" class="img-fluid figure-img" width="170"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;3: Causal diagram of scenario 2</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;3: Causal diagram of scenario 2: <span class="math inline">\(T\)</span> is a common cause of <span class="math inline">\(C\)</span> and <span class="math inline">\(Y\)</span></figcaption><p></p>
 </figure>
 </div>
 <p>What should we make of this? Comparing both scenarios shows that, without knowing the story behind the data it is impossible to determine which treatment is better. It was only after considering the causal mechanisms generating the data that we were able to make a correct conclusion. Viewed that way, the apparent Simpson’s paradox isn’t actually a paradox; it merely shows impressively that making causal claims requires making causal assumptions.</p>
