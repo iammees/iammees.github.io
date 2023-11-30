@@ -383,12 +383,13 @@ ul.task-list li input[type="checkbox"] {
 <p>The main assumption allowing us to estimate the ATE is the <strong>independence assumption</strong>. That is, we assume that the treatment has been assigned to the units independent of their potential outcomes. We can express this formally as:</p>
 <p><span class="math display">\[(Y(1), Y(0)) \perp T\]</span></p>
 <p>If the independence assumption holds, then:</p>
-<p>$$ <span class="math display">\[\begin{align*}
+<p><span class="math display">\[
+\begin{align*}
 \mathbb{E}\left[Y(1)\right] - \mathbb{E}\left[Y(0)\right]
            &amp;= \mathbb{E}\left[Y(1) \vert T=1\right] - \mathbb{E}\left[Y(0)\vert T=0\right]  \\
            &amp;= \mathbb{E}\left[Y \vert T=1\right] - \mathbb{E}\left[Y\vert T=0\right] \\
-
-\end{align*}\]</span> $$</p>
+\end{align*}
+\]</span></p>
 <p>In that case, we have <strong>identified</strong> the causal effect (the ATE in this example) by reducing a causal expression to a purely statistical expression (i.e., an associational quantity that doesn’t use potential outcomes). We say that a causal quantity is <strong>identifiable</strong> if we can compute it from a purely statistical quantity.</p>
 <p>The independence assumption is also known as the <strong>ignorability</strong> or <strong>exchangeability</strong> assumption. Intuitively, we can imagine that under this assumption we can</p>
 <ul>
