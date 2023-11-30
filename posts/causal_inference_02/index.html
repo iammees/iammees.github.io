@@ -170,7 +170,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Finally, there is the <strong>average treatment effect on the untreated</strong> (<strong>ATU</strong>). Like the ATT is the population mean treatment effect on the treatment group, the ATU is simply the average treatment effect on the control group (i.e., the units that didn’t get the treatment):</p>
 <p><span class="math display">\[
 \begin{align*}
-\text{ATT} &amp;= \mathbb{E}\left[\tau_i \vert T_i = 0\right] \\
+\text{ATU} &amp;= \mathbb{E}\left[\tau_i \vert T_i = 0\right] \\
            &amp;= \mathbb{E}\left[Y_i(1) - Y_i(0) \vert T_i = 0 \right] \\
            &amp;= \mathbb{E}\left[Y_i(1) \vert T_i = 0\right] - \mathbb{E}\left[Y_i(0) \vert T_i = 0\right]
 \end{align*}
