@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/causal_inference_02/index.html",
       "/posts/causal_inference_01/index.html",
       "/posts/chatgpt_api_sentiment/index.html",
       "/posts/chatgpt_api_intro/index.html",

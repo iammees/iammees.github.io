@@ -2,78 +2,82 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://iammees.github.io/posts/forecasting_gbdts/index.html</loc>
-    <lastmod>2023-11-30T10:33:17.355Z</lastmod>
+    <lastmod>2023-11-30T17:15:27.661Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/tackling_tabular_02/index.html</loc>
-    <lastmod>2023-11-30T10:33:18.431Z</lastmod>
+    <lastmod>2023-11-30T17:15:28.753Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/tackling_tabular_03/index.html</loc>
-    <lastmod>2023-11-30T10:33:19.726Z</lastmod>
+    <lastmod>2023-11-30T17:15:30.061Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/tackling_tabular_04/index.html</loc>
-    <lastmod>2023-11-30T10:33:20.953Z</lastmod>
+    <lastmod>2023-11-30T17:15:31.296Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/rl_theory_04/index.html</loc>
-    <lastmod>2023-11-30T10:33:21.528Z</lastmod>
+    <lastmod>2023-11-30T17:15:31.857Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/rl_theory_03/index.html</loc>
-    <lastmod>2023-11-30T10:33:22.376Z</lastmod>
+    <lastmod>2023-11-30T17:15:32.681Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/rl_theory_02/index.html</loc>
-    <lastmod>2023-11-30T10:33:23.287Z</lastmod>
+    <lastmod>2023-11-30T17:15:33.557Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/rl_theory_05/index.html</loc>
-    <lastmod>2023-11-30T10:33:24.941Z</lastmod>
+    <lastmod>2023-11-30T17:15:34.457Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iammees.github.io/posts/causal_inference_02/index.html</loc>
+    <lastmod>2023-11-30T17:15:35.514Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/conformal_mapie/index.html</loc>
-    <lastmod>2023-11-30T10:33:26.143Z</lastmod>
+    <lastmod>2023-11-30T17:15:36.401Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/tackling_tabular_01/index.html</loc>
-    <lastmod>2023-11-30T10:33:27.642Z</lastmod>
+    <lastmod>2023-11-30T17:15:37.839Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_intro/index.html</loc>
-    <lastmod>2023-11-30T10:33:28.407Z</lastmod>
+    <lastmod>2023-11-30T17:15:38.472Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/covid19_mortality/index.html</loc>
-    <lastmod>2023-11-30T10:33:31.506Z</lastmod>
+    <lastmod>2023-11-30T17:15:40.950Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/chatgpt_api_sentiment/index.html</loc>
-    <lastmod>2023-11-30T10:33:32.462Z</lastmod>
+    <lastmod>2023-11-30T17:15:41.721Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/image_classification_keras/index.html</loc>
-    <lastmod>2023-11-30T10:33:33.982Z</lastmod>
+    <lastmod>2023-11-30T17:15:42.624Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/semantic_search/index.html</loc>
-    <lastmod>2023-11-30T10:33:35.612Z</lastmod>
+    <lastmod>2023-11-30T17:15:43.930Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/rl_theory_01/index.html</loc>
-    <lastmod>2023-11-30T10:33:36.594Z</lastmod>
+    <lastmod>2023-11-30T17:15:44.842Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/causal_inference_01/index.html</loc>
-    <lastmod>2023-11-30T10:33:37.300Z</lastmod>
+    <lastmod>2023-11-30T17:15:45.492Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/posts/token_classification/index.html</loc>
-    <lastmod>2023-11-30T10:33:38.457Z</lastmod>
+    <lastmod>2023-11-30T17:15:46.542Z</lastmod>
   </url>
   <url>
     <loc>https://iammees.github.io/index.html</loc>
-    <lastmod>2023-11-30T10:33:39.532Z</lastmod>
+    <lastmod>2023-11-30T17:15:47.584Z</lastmod>
   </url>
 </urlset>

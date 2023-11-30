@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.290">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-11-30">
+
+<title>iammees - Causal Inference Series Part 2: Potential Outcomes</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">iammees</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/iammees" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Causal Inference Series Part 2: Potential Outcomes</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">November 30, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>After motivating causal thinking in the first post of this series, we are ready to introduce some concepts and terminology that will not only allow us to reason about causality in a formal manner but will also help us get a more precise understanding of the key ideas and challenges of causal inference. We’ll begin with the <strong>potential outcomes framework</strong>, also known as the <strong>Neyman-Rubin causal model</strong> because its notation was first introduced by Neyman in the 1920s (Neyman, 1923, translated and reprinted in <a href="https://www.jstor.org/stable/2245382">Splawa-Neyman, 1990</a>) in the context of randomized experiments and later extended into a general framework by Rubin (<a href="https://psycnet.apa.org/doi/10.1037/h0037350">1974</a>).</p>
+<section id="potential-outcomes-and-the-individual-treatment-effect" class="level2">
+<h2 class="anchored" data-anchor-id="potential-outcomes-and-the-individual-treatment-effect">Potential outcomes and the individual treatment effect</h2>
+<p>In the potential outcomes framework, a causal effect is defined as a comparison between two states of the world. We’ll illustrate this with an example. Imagine that you have to study for an important and challenging test. You decide to try a new learning technique that you haven’t used before (e.g., <a href="https://en.wikipedia.org/wiki/Spaced_repetition">spaced repetition</a>) and ultimately pass the test. Did the new learning technique <em>cause</em> you to pass the test? This depends on what would have happened in the alternative reality where you didn’t try out the new technique and stuck to your old ways of doing things. If you had also passed the test, there wasn’t a causal effect (on the outcome of passing or failing the test); but if you would have failed the test, there indeed was a causal effect.</p>
+<p>In this simple example, we introduced the concept of <strong>potential outcomes</strong>. Potential outcomes exist only ex ante; they are a set of possibilities that can <em>potentially</em> be observed. Ultimately though, there will only be one <strong>observed outcome</strong>, and, since we cannot peak into alternative realities, we won’t know anything about the <strong>counterfactual outcomes</strong> (i.e., the outcomes that didn’t actually materialize).</p>
+<p>Let’s introduce some notation and define these terms more formally. The potential outcome <span class="math inline">\(Y_i(t)\)</span> denotes the outcome of individual <span class="math inline">\(i\)</span> when getting treatment <span class="math inline">\(t\)</span>. (Note: Instead of “individual” you’ll often see the term “unit” since the objects of study aren’t always people.) In our example, <span class="math inline">\(Y(1)\)</span> would denote the outcome (i.e., if you pass or fail the test) if you tried the new learning technique (<span class="math inline">\(T=1\)</span>), and <span class="math inline">\(Y(0)\)</span> would denote the outcome if you kept learning like before (<span class="math inline">\(T=0\)</span>). If the new technique actually causes you to pass the test, then <span class="math inline">\(Y(1) = 1\)</span> and <span class="math inline">\(Y(0) = 0\)</span>. In contrast, if you would have passed the test anyway (i.e., no matter how you learned), <span class="math inline">\(Y(1)=1\)</span> and <span class="math inline">\(Y(0)=1\)</span>.</p>
+<p>We can define the <strong>individual treatment effect</strong> (<strong>ITE</strong>, also known as the individual causal effect, the unit-level causal effect, or the unit-level treatment effect) for individual <span class="math inline">\(i\)</span> as follows:</p>
+<p><span class="math display">\[\tau_i = Y_i(1) - Y_i(0)\]</span></p>
+<p>This leads us to what is known as the <strong>fundamental problem of causal inference</strong>. As we noted above, it is impossible to observe all potential outcomes for a given individual. Whereas potential outcomes are hypothetical random variables, there will only be one observed outcome (also called the actual or empirical outcome). That is, we cannot observe both <span class="math inline">\(Y_1(1)\)</span> and <span class="math inline">\(Y_i(0)\)</span> and therefore cannot observe the ITE.</p>
+<p>Note:</p>
+<ul>
+<li>We’ll generally use <span class="math inline">\(T\)</span> to denote the random variable for the treatment, <span class="math inline">\(Y\)</span> to denote the random variable for the outcome, and <span class="math inline">\(X\)</span> to denote covariates. We’ll also follow the convention of uppercase letters denoting random variables and lowercase letters denoting values that random variables take on.</li>
+<li>Here, we assume that <span class="math inline">\(T\)</span>, the random variable for the treatment, is binary. In general though, <span class="math inline">\(T\)</span> can take on more than two values or be continuous.</li>
+<li>While <span class="math inline">\(Y(t)\)</span> (note the missing subscript) is a random variable because different units have different potential outcomes, <span class="math inline">\(Y_i(t)\)</span> is usually thought of as being deterministic.</li>
+<li>The potential outcomes that we cannot observe (because they only materialize in an alternative reality) are often called <strong>counterfactuals</strong>, whereas the actually observed outcome is sometimes referred to as a <strong>factual</strong>. It is important to note, however, that we can only speak of counterfactuals and factuals when an outcome has been observed. If there is not yet an observed outcome, there are only <em>potential</em> outcomes.</li>
+</ul>
+</section>
+<section id="average-treatment-effects" class="level2">
+<h2 class="anchored" data-anchor-id="average-treatment-effects">Average treatment effects</h2>
+<p>If we cannot compute individual treatment effects, what about <em>average</em> treatment effects? There are three quantities, all population means, that can be expressed in terms of potential outcomes and are commonly of interest in causal inference.</p>
+<p>We can formally derive the <strong>average treatment effect</strong> (<strong>ATE</strong>, also called ACE, the average causal effect) by taking an average over the ITEs:</p>
+<p><span class="math display">\[
+\begin{align*}
+\text{ATE} &amp;= \mathbb{E}\left[\tau_i\right] \\
+           &amp;= \mathbb{E}\left[Y_i(1) - Y_i(0)\right] \\
+           &amp;= \mathbb{E}\left[Y_i(1)\right] - \mathbb{E}\left[Y_i(0)\right]
+\end{align*}
+\]</span></p>
+<p>Then there is the <strong>average treatment effect on the treated</strong> (<strong>ATT</strong>). To see what the ATT is, consider that there are two groups of units: a treatment group that gets some treatment and a control group that doesn’t get this treatment. The ATT is the average treatment effect for the group of units that has been assigned the treatment:</p>
+<p><span class="math display">\[
+\begin{align*}
+\text{ATT} &amp;= \mathbb{E}\left[\tau_i \vert T_i = 1\right] \\
+           &amp;= \mathbb{E}\left[Y_i(1) - Y_i(0) \vert T_i = 1 \right] \\
+           &amp;= \mathbb{E}\left[Y_i(1) \vert T_i = 1\right] - \mathbb{E}\left[Y_i(0) \vert T_i = 1\right]
+\end{align*}
+\]</span></p>
+<p>Finally, there is the <strong>average treatment effect on the untreated</strong> (<strong>ATU</strong>). Like the ATT is the population mean treatment effect on the treatment group, the ATU is simply the average treatment effect on the control group (i.e., the units that didn’t get the treatment):</p>
+<p><span class="math display">\[
+\begin{align*}
+\text{ATT} &amp;= \mathbb{E}\left[\tau_i \vert T_i = 0\right] \\
+           &amp;= \mathbb{E}\left[Y_i(1) - Y_i(0) \vert T_i = 0 \right] \\
+           &amp;= \mathbb{E}\left[Y_i(1) \vert T_i = 0\right] - \mathbb{E}\left[Y_i(0) \vert T_i = 0\right]
+\end{align*}
+\]</span></p>
+<p>You have probably noticed by now that, like the ITE, these average treatment effects are inherently unknowable; they all require both potential outcomes for every unit <span class="math inline">\(i\)</span>. Don’t fret: we cannot <em>calculate</em> them, but we can <em>estimate</em> them. But before we talk about estimation, let’s have a look at a concrete example to shine some light on the differences between the ATE, ATT, and ATU.</p>
+<p>Let’s revive our earlier example of learning for a test, but we’ll now focus on the test score and collect data from ten students. As before, students can learn for a test either with some new technique (<span class="math inline">\(T_i = 1\)</span>) or continue to learn like they did before (<span class="math inline">\(T_i = 0\)</span>). The outcome is the test score from 0 to 100. Each student has two potential outcomes: a potential outcome in the world where they used the new learning technique (<span class="math inline">\(Y(1)\)</span>) and a potential outcome in the world where they didn’t (<span class="math inline">\(Y(0)\)</span>).</p>
+<p>Let’s begin by working some magic so that we know both potential outcomes for each student.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><span class="math inline">\(i\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y(1)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y(0)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\tau\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1</td>
+<td style="text-align: right;"><span class="math inline">\(86\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(78\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2</td>
+<td style="text-align: right;"><span class="math inline">\(94\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(95\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3</td>
+<td style="text-align: right;"><span class="math inline">\(91\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(72\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(19\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4</td>
+<td style="text-align: right;"><span class="math inline">\(69\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(72\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">5</td>
+<td style="text-align: right;"><span class="math inline">\(85\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(81\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">6</td>
+<td style="text-align: right;"><span class="math inline">\(84\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(68\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(16\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">7</td>
+<td style="text-align: right;"><span class="math inline">\(71\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(73\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">8</td>
+<td style="text-align: right;"><span class="math inline">\(79\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(71\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">9</td>
+<td style="text-align: right;"><span class="math inline">\(75\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(69\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(6\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">10</td>
+<td style="text-align: right;"><span class="math inline">\(87\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(77\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>As we can see, we have <strong>heterogeneous treatment effects</strong>. Three students actually fare worse when using the new learning technique (i.e., they get a higher test score in the world where they don’t use the new technique), while all the other students can improve their test scores, but to a varying extent.</p>
+<p>The ATE is simply the mean difference between the second column (<span class="math inline">\(Y(1)\)</span>) and the third column (<span class="math inline">\(Y(0)\)</span>). Since <span class="math inline">\(\mathbb{E}\left[Y(1) \right] = 82.1\)</span> and <span class="math inline">\(\mathbb{E}\left[Y(0) \right] = 75.6\)</span>, the <span class="math inline">\(\text{ATE}\)</span> equals <span class="math inline">\(6.5\)</span>. That is, the average treatment effect of using the new learning technique is <span class="math inline">\(6.5\)</span> points for our ten students.</p>
+<p>To calculate the ATT and the ATU, we have to assign students to specific treatments (i.e., we have to split the participants of our little study into a treatment and a control group). Since we are good Samaritans, we’ll assign the students to the treatment helping them the most (i.e., each student gets the treatment that results in the higher individual test score). Then, the <span class="math inline">\(\text{ATT}\)</span> equals <span class="math inline">\(10.1\)</span>, and the <span class="math inline">\(\text{ATU}\)</span> equals <span class="math inline">\(-2\)</span>.</p>
+</section>
+<section id="estimating-average-treatment-effects" class="level2">
+<h2 class="anchored" data-anchor-id="estimating-average-treatment-effects">Estimating average treatment effects</h2>
+<p>Using magic was great; it allowed us to see both states of the world (i.e., both potential outcomes). Alas, in reality, we have to deal with the fundamental problem of causal inference. That is, our data will look something like this:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><span class="math inline">\(i\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(T\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y(1)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y(0)\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Y(1)-Y(0)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1</td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(86\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(86\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2</td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(95\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(95\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3</td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(91\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(91\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4</td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(69\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(69\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">5</td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(81\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(81\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">6</td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(84\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(84\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">7</td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(73\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(73\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">8</td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(71\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(71\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">9</td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(75\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(75\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">10</td>
+<td style="text-align: center;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(87\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(87\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(?\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(?\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Given all the missing data (denoted by the question marks), how can we <em>estimate</em> the ATE? Well, we could simply ignore the missing data, take the average of the <span class="math inline">\(Y(1)\)</span> column and subtract the average of the <span class="math inline">\(Y(0)\)</span> column. This simplistic estimator that uses the data we actually have is called the <strong>simple difference in means</strong>: <span class="math inline">\(\mathbb{E} \left[Y(1) \vert T=1 \right] - \mathbb{E} \left[Y(0) \vert T=0 \right] = \mathbb{E} \left[Y \vert T=1 \right] - \mathbb{E} \left[Y \vert T=0 \right]\)</span>.</p>
+<p>Before we discuss some assumptions under which we can actually use the simple difference in mean outcomes to estimate the ATE, let’s see why and how both quantities differ.</p>
+<p>First, it is important to understand that the ATE is a weighted sum of the ATT and the ATU:</p>
+<p><span class="math display">\[
+\begin{align*}
+\text{ATE} &amp;= \pi \text{ATT} + (1 - \pi) \text{ATU} \\
+           &amp;= \pi \mathbb{E}\left[Y(1) \vert T=1 \right] - \pi \mathbb{E}\left[Y(0) \vert T= 1\right] \\
+           &amp;\quad +(1- \pi) \mathbb{E}\left[Y(1) \vert T=0 \right] - (1-\pi)\mathbb{E} \left[Y(0) \vert T=0\right]
+\end{align*}
+\]</span></p>
+<p>where <span class="math inline">\(\pi\)</span> is the share of units who received the treatment (<span class="math inline">\(T=1\)</span>) and <span class="math inline">\(1-\pi\)</span> is the share of units who didn’t receive the treatment (<span class="math inline">\(T=0\)</span>). This can be <a href="(https://mixtape.scunning.com/04-potential_outcomes#simple-difference-in-means-decomposition)">rearranged</a> so that we get:</p>
+<p><span class="math display">\[\begin{align*}
+\underbrace{\mathbb{E} \left[Y(1) \vert T = 1 \right] - \mathbb{E} \left[Y(0) \vert T=0  \right]}_{ \text{simple difference in means}}
+= &amp;\quad \underbrace{\mathbb{E}\left[Y(1)\right] - \mathbb{E}\left[Y(0)\right]}_{ \text{average treatment effect}}
+\\
+&amp;+ \underbrace{\mathbb{E}\left[Y(0)\vert T=1\right] - \mathbb{E}\left[Y(0)\vert T=0\right]}_{ \text{selection bias}}
+\\
+&amp;+ \underbrace{(1-\pi)(ATT - ATU)}_{ \text{heterogeneous treatment effect bias}}
+\end{align*}
+\]</span></p>
+<p>It turns out that the simple difference in means can be decomposed into three quantities: the average treatment effect, a quantity representing the selection bias, and a quantity representing the heterogeneous treatment effect bias. We already know the ATE, so let’s discuss the other two:</p>
+<ul>
+<li><strong>Selection bias</strong>: The selection bias, <span class="math inline">\(\mathbb{E}\left[Y(0)\vert T=1\right] - \mathbb{E}\left[Y(0)\vert T=0\right]\)</span>, is the inherent difference between the treatment group and the control group. More precisely, it is how their potential outcomes differ under control (<span class="math inline">\(Y(0)\)</span>).</li>
+<li><strong>Heterogeneous treatment effect bias</strong>: This bias reflects the difference between the treatment effects for both groups weighted by the share of the population that is in the control group.</li>
+</ul>
+<p>The fundamental problem of causal inference makes it impossible to actually compute these quantities. Thus, if we want to estimate the <em>causal</em> quantity <span class="math inline">\(\mathbb{E}\left[Y(1)\right] - \mathbb{E}\left[Y(0)\right]\)</span> (i.e., the ATE) using the <em>associational</em> quantity <span class="math inline">\(\mathbb{E} \left[Y(1) \vert T = 1 \right] - \mathbb{E} \left[Y(0) \vert T=0 \right]\)</span> (i.e., the difference in mean outcomes) we have to negate these biases. (Note that we could make the strong assumptions that <span class="math inline">\(\tau_i = \tau\)</span> for all <span class="math inline">\(i\)</span>, so that <span class="math inline">\(\text{ATT} = \text{ATU}\)</span>, but even then we would have to deal with selection bias.)</p>
+<p>We’ll discuss the necessary assumptions for negating these biases next.</p>
+<section id="independence-assumption" class="level3">
+<h3 class="anchored" data-anchor-id="independence-assumption">Independence assumption</h3>
+<p>The main assumption allowing us to estimate the ATE is the <strong>independence assumption</strong>. That is, we assume that the treatment has been assigned to the units independent of their potential outcomes. We can express this formally as:</p>
+<p><span class="math display">\[(Y(1), Y(0)) \perp T\]</span></p>
+<p>If the independence assumption holds, then:</p>
+<p>$$ <span class="math display">\[\begin{align*}
+\mathbb{E}\left[Y(1)\right] - \mathbb{E}\left[Y(0)\right]
+           &amp;= \mathbb{E}\left[Y(1) \vert T=1\right] - \mathbb{E}\left[Y(0)\vert T=0\right]  \\
+           &amp;= \mathbb{E}\left[Y \vert T=1\right] - \mathbb{E}\left[Y\vert T=0\right] \\
+
+\end{align*}\]</span> $$</p>
+<p>In that case, we have <strong>identified</strong> the causal effect (the ATE in this example) by reducing a causal expression to a purely statistical expression (i.e., an associational quantity that doesn’t use potential outcomes). We say that a causal quantity is <strong>identifiable</strong> if we can compute it from a purely statistical quantity.</p>
+<p>The independence assumption is also known as the <strong>ignorability</strong> or <strong>exchangeability</strong> assumption. Intuitively, we can imagine that under this assumption we can</p>
+<ul>
+<li><em>ignore</em> how people selected themselves into the treatment and control groups. That is, we assume that they were randomly assigned their treatment.</li>
+<li><em>exchange</em> the treatment and the control group, and the new treatment group would observe the same outcomes as the old treatment group (<span class="math inline">\(\mathbb{E}\left[Y(1) \vert T=0 \right] = \mathbb{E}\left[Y(1) \vert T=1 \right]\)</span>), and the new control group would observe the same outcomes as the old control group (<span class="math inline">\(\mathbb{E}\left[Y(0) \vert T=0 \right] = \mathbb{E}\left[Y(0) \vert T=1 \right]\)</span>). In essence, this means that both groups differ only in the treatment; otherwise they are comparable.</li>
+</ul>
+<p>Earlier, when we assigned each student to the treatment or the control group based on what maximized their test score, we deliberately and completely violated this assumption. In general, it is very unlikely that the independence assumption holds in observational data (i.e., where humans <em>sort themselves</em> into both groups). For example, imagine that we are studying the effectiveness of a new exercise program for weight loss and recruit the participants of our study by advertising in a fitness magazine. It is virtually guaranteed that this scheme suffers from selection bias, because people who read fitness magazines are more likely to be motivated to get fit than people who do not read fitness magazines. Stories like this show why naive observational comparisons almost always fail to provide the desired causal effects.</p>
+<p>Luckily, causal inference offers multiple methods that allow us to deal with this problem. Note that the most convincing way is <strong>randomization</strong>. If we run a randomized experiment, we ensure the exchangeability of the treatment and control groups by randomly assigning the units to both groups, thereby eliminating both the selection bias and the heterogeneous treatment effect bias.</p>
+</section>
+<section id="conditional-independence-assumption" class="level3">
+<h3 class="anchored" data-anchor-id="conditional-independence-assumption">Conditional independence assumption</h3>
+<p>We’ve established that we cannot just assume that the treatment groups are exchangeable, i.e., the same in all relevant variables apart from the treatment. But what if we control for these variables by conditioning on them? Then, the subgroups should be exchangeable. This is the <strong>conditional independence</strong> assumption (also known as <strong>conditional exchangeability</strong> or <strong>unconfoundedness</strong>):</p>
+<p><span class="math display">\[(Y(1), Y(0)) \perp T\ \vert\ X\]</span></p>
+<p>We’ll illustrate how this plays out with the following example:</p>
+<div id="fig-diagram" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><img src="potential_outcomes_confounding.png" class="quarto-discovered-preview-image img-fluid figure-img" width="170"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;1: The effect of <span class="math inline">\(T\)</span> on <span class="math inline">\(Y\)</span> is confounded by <span class="math inline">\(X\)</span></figcaption><p></p>
+</figure>
+</div>
+<p>Here, the causal effect of the treatment <span class="math inline">\(T\)</span> on the outcome <span class="math inline">\(Y\)</span> is confounded by <span class="math inline">\(X\)</span> which is a common cause of <span class="math inline">\(T\)</span> and <span class="math inline">\(Y\)</span>. Because <span class="math inline">\(T\)</span> and <span class="math inline">\(Y\)</span> have a common cause, there is non-causal association between <span class="math inline">\(T\)</span> and <span class="math inline">\(Y\)</span>. We can block this non-causal association when we condition on <span class="math inline">\(X\)</span>.</p>
+<p>To make this more concrete, imagine that we are interested in the causal effect of time spent by students studying for a test (<span class="math inline">\(T\)</span>) on the test score (<span class="math inline">\(Y\)</span>). This effect is confounded by student motivation (<span class="math inline">\(X\)</span>) which is a common cause of <span class="math inline">\(T\)</span> and <span class="math inline">\(Y\)</span>. (Let’s assume that this is the only relevant variable apart from the treatment and the outcome, even though you might think of other ones.) To simplify things, suppose that students spend either ten (<span class="math inline">\(T=0\)</span>) or twenty hours (<span class="math inline">\(T=1\)</span>) studying. If we just compared the test scores of these two groups, we wouldn’t get the actual causal effect of <span class="math inline">\(T\)</span> on <span class="math inline">\(Y\)</span> because of confounding. Since motivated students are more likely to be in the group that puts in more effort, the result would be biased. But now suppose that we are able to measure student motivation and again there are only two groups: students with low motivation and students with high motivation. What would conditioning on <span class="math inline">\(X\)</span> mean? If we condition on <span class="math inline">\(X\)</span>, we compare the test scores of students that studied for twenty hours with the test scores of students that studied for ten hours, but only within the same levels of <span class="math inline">\(X\)</span> (i.e., within the group with low motivation and within the group with high motivation). Within levels of <span class="math inline">\(X\)</span> there is no non-causal association between <span class="math inline">\(T\)</span> and <span class="math inline">\(Y\)</span>; that is, we have established <em>conditional</em> exchangeability in the data. We say that we can <em>identify</em> the causal effect within levels of <span class="math inline">\(X\)</span>.</p>
+<p>Let’s express this idea formally:</p>
+<p><span class="math display">\[
+\begin{align*}
+\mathbb{E}\left[Y(1) - Y(0)\ \vert\  X \right]
+           &amp;= \mathbb{E}\left[Y(1)\ \vert\  X \right] - \mathbb{E}\left[Y(0)\ \vert\  X \right] \\
+           &amp;= \mathbb{E}\left[Y(1)\ \vert \ T=1, X\right] - \mathbb{E}\left[Y(0)\ \vert \ T=0, X\right]  \\
+           &amp;= \mathbb{E}\left[Y\ \vert \ T=1, X\right] - \mathbb{E}\left[Y\ \vert \ T=0, X\right] \\
+\end{align*}
+\]</span></p>
+<p>By marginalizing out <span class="math inline">\(X\)</span> we can get the marginal effect. This is called the <strong>adjustment formula</strong> (because we can achieve conditional exchangeability by <em>adjusting</em> or <em>controlling</em> for other variables):</p>
+<p><span class="math display">\[
+\begin{align*}
+\mathbb{E}\left[Y(1) - Y(0) \right]
+           &amp;= \mathbb{E}_X\mathbb{E}\left[Y(1) -Y(0)\ \vert\  X \right]  \\
+           &amp;= \mathbb{E}_X\left[\mathbb{E}\left[Y\ \vert \ T=1, X\right] - \mathbb{E}\left[Y\ \vert \ T=0, X\right]\right]  \\
+\end{align*}
+\]</span></p>
+<p>Because it allows us to work out causal effects in the presence of confounding, conditional exchangeability is a fundamental assumption of causal inference – we will rely on it a lot. But note that this doesn’t mean that we should condition on every observed covariate; sometimes conditioning on other variables will actually increase the bias of our causal estimates (we’ll discuss why this is the case in more depth in a future post).</p>
+</section>
+<section id="positivity-assumption" class="level3">
+<h3 class="anchored" data-anchor-id="positivity-assumption">Positivity assumption</h3>
+<p>For the assumption of conditional exchangeability to hold, we have to introduce another important assumption. Just consider what would happen if we condition on <span class="math inline">\(X\)</span> but one of the resulting subgroups doesn’t receive the treatment <em>at all</em>? We would condition on an event with zero probability and therefore couldn’t assume unconfoundedness. Thus, <strong>positivity</strong> is the assumption that for all values of covariates <span class="math inline">\(x\)</span> present in the population of interest (i.e., <span class="math inline">\(x\)</span> such that <span class="math inline">\(P(X=x)&gt;0\)</span>) we have</p>
+<p><span class="math display">\[0 &lt; P(T = 1 \vert X=x) &lt; 1.\]</span></p>
+<p>This is also known as <strong>overlap</strong> (because we need the covariate distribution of the treatment group to overlap with the covariate distribution of the control group) and <strong>common support</strong> (because we need <span class="math inline">\(P(X \vert T=1)\)</span> to have the same support as <span class="math inline">\(P(X \vert T=0)\)</span>).</p>
+<p>Put simply, a violation of the positivity assumption means that in some subgroup of the data either everyone receives the treatment or everyone receives the control. Hence, within this subgroup it is simply impossible to estimate the causal effect of treatment vs.&nbsp;control. In terms of our earlier example, just imagine what would happen if none of the students with low motivation had received the treatment (i.e., studied for twenty hours). In this subgroup, we wouldn’t be able to compare the test scores of the treatment group with the test scores of the control group because there is only one, the treatment group. Hence, we wouldn’t be able to estimate the causal effect.</p>
+<p>What follows is that there is a tradeoff between unconfoundedness and positivity. The more we increase the dimension of the covariates (i.e., by conditioning on more covariates), the smaller the subgroups become for any level <span class="math inline">\(x\)</span> of the covariates. The smaller a subgroup, the higher the chance that it only contains units that have received the treatment or units that have received the control. Finally, if the size of any subgroup has decreased to one, the violation of the positivity assumption is guaranteed. In regions where <span class="math inline">\(P(T=1, X=x)=0\)</span> or <span class="math inline">\(P(T=0, X=x)=0\)</span> our model will be forced to extrapolate which can lead to very bad results.</p>
+</section>
+<section id="no-interference-assumption" class="level3">
+<h3 class="anchored" data-anchor-id="no-interference-assumption">No interference assumption</h3>
+<p>The next assumption is pretty simple. <strong>No interference</strong> means that the outcome of unit <span class="math inline">\(i\)</span> is unaffected by the outcome of other units:</p>
+<p><span class="math display">\[Y_i(t_1, \dots, t_i, \dots, t_n)=Y_i(t_i).\]</span></p>
+<p>It is easy to imagine situations where this assumption is violated. Suppose that we are interested in the effect of team building events on employee satisfaction. If the treatment and control groups work for the same company it may very well be that the satisfaction improves in the treatment group while the employees in the control group become unhappy because they feel left out. In general, it will be basically impossible to eliminate violations of the no interference assumption in data with network effects.</p>
+</section>
+<section id="consistency-assumption" class="level3">
+<h3 class="anchored" data-anchor-id="consistency-assumption">Consistency assumption</h3>
+<p>This is the last assumption. The <strong>consistency</strong> assumption is that the outcome we observe (<span class="math inline">\(Y\)</span>) given treatment <span class="math inline">\(T\)</span> is actually the potential outcome under treatment <span class="math inline">\(T\)</span>. Formally,</p>
+<p><span class="math display">\[Y = Y(T).\]</span></p>
+<p>To see what this means in practice, let’s think about the effect of team building events on employee satisfaction again. The problem is simple: there are team building events that are a great fit to the company and the team, and there are team building events which will make you look for a new job the same evening. In both cases <span class="math inline">\(T=1\)</span>, but the potential outcome <span class="math inline">\(Y(1)\)</span> depends on the actual nature of the treatment. Put simply, we can refer to the consistency assumption as “no multiple versions of treatment.”</p>
+<p>The no interference assumption and the consistency assumption are often lumped together and called the <strong>stable unit treatment value assumption</strong> (<strong>SUTVA</strong>).</p>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>Our whirlwind tour of the potential outcomes framework has come to an end. We’ve learned that we can define a causal effect as a comparison between two states of the world. In the first state, an individual receives a treatment; in the second state, the individual doesn’t receive the treatment. Then, the causal effect of the treatment is equal to the difference in outcomes between these two states of the world. We’ve used this logic to formally define different types of causal effects, but also had to face the fundamental problem of causal inference: while there exists a set of <em>potential</em> outcomes ex ante, we can only observe the <em>actual</em> outcome and will never know about the <em>counterfactual</em> outcome(s). This is why we can only <em>estimate</em> causal effects. To this end, we introduced several assumptions. The independence assumption states that the treatment has to be assigned independent of the potential outcomes. This can be achieved by randomizing the assignment of the treatment to the units. Another way is to use the conditional independence assumption which allows to estimate causal effects by adjusting for other variables. Finally, we briefly discussed the positivity assumption (in every subgroup of the data there have to be units that receive the treatment and units that receive the control), the no interference assumption (the outcome of unit <span class="math inline">\(i\)</span> has to be unaffected by the outcome of other units), and the consistency assumption (there should be no multiple versions of the treatment).</p>
+<p>In the next post, we will introduce another framework that uses causal graphs to offer a different perspective on causal inference. Mathematically, though, it is equivalent to the potential outcomes framework.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
